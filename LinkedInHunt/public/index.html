@@ -1042,7 +1042,7 @@
       if (criteria) params.set('criteria', criteria);
 
       try {
-        const res  = await fetch(`/api/jobs?${params}`);
+        const res  = await fetch(`api/jobs?${params}`);
         const data = await res.json();
 
         if (!res.ok) {
