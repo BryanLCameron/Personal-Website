@@ -6,62 +6,429 @@
   <title>Bryan L Cameron</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #e8e8e8;
-      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: 62px;
+      background: #0a1628;
+      border-bottom: 1px solid #1c3050;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2.5rem;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      text-decoration: none;
+    }
+
+    .nav-domain {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+      font-family: 'Courier New', monospace;
+    }
+
+    .nav-domain span { color: #00e87a; }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #7a9bb5;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: #00e87a; }
+
+    /* ── SECTIONS ── */
+    section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    section.flip .section-content { order: 2; }
+    section.flip .art-wrap         { order: 1; }
+
+    .section-content {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
+      padding: 64px 7%;
     }
 
-    .container {
-      text-align: center;
-      padding: 2rem;
+    /* ── COLOURS ── */
+    section.light                    { background: #edf2f8; color: #0d1b2a; }
+    section.light .section-label     { color: #006644; }
+    section.light .section-title     { color: #0d1b2a; }
+    section.light .placeholder-box   { background: #dce6f3; border-color: #b8cfe6; }
+    section.light .placeholder-box p { color: #4a6a88; }
+    section.light .placeholder-tag   { background: #edf2f8; border-color: #b0c8e0; color: #7a9ab8; }
+
+    section.dark                     { background: #0e1f35; color: #ffffff; }
+    section.dark .section-label      { color: #00e87a; }
+    section.dark .section-title      { color: #ffffff; }
+    section.dark .placeholder-box    { background: #162236; border-color: #243f5e; }
+    section.dark .placeholder-box p  { color: #7a9bb5; }
+    section.dark .placeholder-tag    { background: #0e1f35; border-color: #2a4060; color: #3d6080; }
+
+    /* ── TYPOGRAPHY ── */
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
     }
 
-    .name {
-      font-size: clamp(2.5rem, 8vw, 5rem);
+    .section-title {
+      font-size: clamp(1.5rem, 2.2vw, 2.4rem);
       font-weight: 700;
       letter-spacing: -0.02em;
-      color: #ffffff;
+      line-height: 1.15;
+      margin-bottom: 1.4rem;
     }
 
-    .divider {
-      width: 40px;
-      height: 2px;
-      background: #444;
-      margin: 1.5rem auto;
+    .placeholder-box {
+      border-radius: 5px;
+      padding: 1.25rem 1.5rem;
+      border: 1px dashed;
     }
 
-    .tagline {
-      font-size: 1rem;
-      color: #666;
-      letter-spacing: 0.1em;
+    .placeholder-tag {
+      display: inline-block;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
+      padding: 0.2rem 0.55rem;
+      border-radius: 3px;
+      margin-bottom: 0.75rem;
+      border: 1px solid;
     }
 
+    .placeholder-box p {
+      font-size: 0.875rem;
+      line-height: 1.7;
+    }
+
+    /* ── ART COLUMN — stretches to match content height ── */
+    .art-wrap {
+      overflow: hidden;
+      min-height: 220px;
+    }
+
+    .art-wrap svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── CONTACT FIELDS ── */
+    .contact-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .field {
+      border-radius: 4px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 0.9rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+    }
+
+    .field.textarea {
+      height: 80px;
+      align-items: flex-start;
+      padding-top: 0.75rem;
+    }
+
+    section.light .field { background: #dce6f3; border: 1px solid #b8cfe6; color: #7a9ab8; }
+    section.dark  .field { background: #162236; border: 1px solid #243f5e; color: #3d6080; }
+
+    .send-btn {
+      border: none;
+      padding: 0.65rem 1.75rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: not-allowed;
+      opacity: 0.65;
+      width: fit-content;
+      margin-top: 0.25rem;
+    }
+
+    section.light .send-btn { background: #006644; color: #ffffff; }
+    section.dark  .send-btn { background: #00e87a; color: #0a1628; }
+
+    /* ── FOOTER ── */
     footer {
-      position: fixed;
-      bottom: 1.5rem;
-      font-size: 0.75rem;
-      color: #333;
-      letter-spacing: 0.05em;
+      background: #060f1c;
+      border-top: 1px solid #1a2e44;
+      padding: 1.5rem 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #2a4060;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 800px) {
+      section { grid-template-columns: 1fr; }
+      section.flip .section-content { order: 1; }
+      section.flip .art-wrap        { order: 2; }
+      .art-wrap     { min-height: 200px; }
+      nav           { padding: 0 1.5rem; }
+      .nav-links    { gap: 1.2rem; }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1 class="name">Bryan Cameron</h1>
-    <div class="divider"></div>
-    <p class="tagline">Coming Soon</p>
+<!-- ══ NAV ══ -->
+<nav>
+  <a class="nav-logo" href="#">
+
+    <!-- Logo: circular PCB — 4 traces from circle edge, pinwheel routing, square endpoints -->
+    <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Outer circle -->
+      <circle cx="50" cy="50" r="46" fill="#0a1628" stroke="#00e87a" stroke-width="5"/>
+      <!-- Trace 1: NW corner of circle → right → down → pad at (35,35) -->
+      <polyline points="17.5,17.5 35,17.5 35,35"
+                fill="none" stroke="#00e87a" stroke-width="5"
+                stroke-linecap="square" stroke-linejoin="miter"/>
+      <!-- Trace 2: NE corner → down → left → pad at (65,35) -->
+      <polyline points="82.5,17.5 82.5,35 65,35"
+                fill="none" stroke="#00e87a" stroke-width="5"
+                stroke-linecap="square" stroke-linejoin="miter"/>
+      <!-- Trace 3: SE corner → left → up → pad at (65,65) -->
+      <polyline points="82.5,82.5 65,82.5 65,65"
+                fill="none" stroke="#00e87a" stroke-width="5"
+                stroke-linecap="square" stroke-linejoin="miter"/>
+      <!-- Trace 4: SW corner → up → right → pad at (35,65) -->
+      <polyline points="17.5,82.5 17.5,65 35,65"
+                fill="none" stroke="#00e87a" stroke-width="5"
+                stroke-linecap="square" stroke-linejoin="miter"/>
+      <!-- Pad terminations at inner endpoints — open rings forming a square -->
+      <circle cx="35" cy="35" r="6.5" fill="#0a1628" stroke="#00e87a" stroke-width="4"/>
+      <circle cx="65" cy="35" r="6.5" fill="#0a1628" stroke="#00e87a" stroke-width="4"/>
+      <circle cx="65" cy="65" r="6.5" fill="#0a1628" stroke="#00e87a" stroke-width="4"/>
+      <circle cx="35" cy="65" r="6.5" fill="#0a1628" stroke="#00e87a" stroke-width="4"/>
+    </svg>
+
+    <span class="nav-domain">bryancameron<span>.io</span></span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#ai-projects">AI Projects</a></li>
+    <li><a href="#career">Career</a></li>
+    <li><a href="#about">About Me</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- spacer for fixed nav -->
+<div style="height:62px;"></div>
+
+
+<!-- ══ 1. AI PROJECTS — light ══ -->
+<section id="ai-projects" class="light">
+
+  <div class="section-content">
+    <p class="section-label">AI Projects</p>
+    <h2 class="section-title">Building with Artificial Intelligence</h2>
+    <div class="placeholder-box">
+      <span class="placeholder-tag">Placeholder</span>
+      <p>This section will showcase your AI-powered web applications and experiments. Add project cards, demos, and links as you build them.</p>
+    </div>
   </div>
 
-  <footer>bryancameron.io</footer>
+  <div class="art-wrap">
+    <svg viewBox="0 0 500 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <rect width="500" height="300" fill="#dce6f3"/>
+      <line x1="0" y1="150" x2="500" y2="150" stroke="#c4d8ee" stroke-width="1"/>
+      <line x1="250" y1="0" x2="250" y2="300" stroke="#c4d8ee" stroke-width="1"/>
+      <!-- input -->
+      <circle cx="70"  cy="80"  r="10" fill="none" stroke="#006644" stroke-width="2"/>
+      <circle cx="70"  cy="150" r="10" fill="none" stroke="#006644" stroke-width="2"/>
+      <circle cx="70"  cy="220" r="10" fill="none" stroke="#006644" stroke-width="2"/>
+      <!-- hidden 1 -->
+      <circle cx="200" cy="100" r="10" fill="none" stroke="#006644" stroke-width="2"/>
+      <circle cx="200" cy="200" r="10" fill="none" stroke="#006644" stroke-width="2"/>
+      <!-- hidden 2 -->
+      <circle cx="320" cy="100" r="10" fill="#006644" fill-opacity="0.12" stroke="#006644" stroke-width="2"/>
+      <circle cx="320" cy="200" r="10" fill="#006644" fill-opacity="0.12" stroke="#006644" stroke-width="2"/>
+      <!-- output -->
+      <circle cx="440" cy="150" r="13" fill="#006644" fill-opacity="0.2" stroke="#006644" stroke-width="2.5"/>
+      <!-- connections -->
+      <g stroke="#006644" stroke-width="0.6" opacity="0.2">
+        <line x1="80"  y1="80"  x2="190" y2="100"/><line x1="80"  y1="80"  x2="190" y2="200"/>
+        <line x1="80"  y1="150" x2="190" y2="100"/><line x1="80"  y1="150" x2="190" y2="200"/>
+        <line x1="80"  y1="220" x2="190" y2="100"/><line x1="80"  y1="220" x2="190" y2="200"/>
+        <line x1="210" y1="100" x2="310" y2="100"/><line x1="210" y1="100" x2="310" y2="200"/>
+        <line x1="210" y1="200" x2="310" y2="100"/><line x1="210" y1="200" x2="310" y2="200"/>
+      </g>
+      <g stroke="#006644" stroke-width="1.2" opacity="0.4">
+        <line x1="330" y1="100" x2="427" y2="150"/>
+        <line x1="330" y1="200" x2="427" y2="150"/>
+      </g>
+      <text x="70"  y="260" text-anchor="middle" fill="#7a9ab8" font-size="9" font-family="monospace">INPUT</text>
+      <text x="260" y="260" text-anchor="middle" fill="#7a9ab8" font-size="9" font-family="monospace">HIDDEN</text>
+      <text x="440" y="260" text-anchor="middle" fill="#7a9ab8" font-size="9" font-family="monospace">OUTPUT</text>
+    </svg>
+  </div>
+
+</section>
+
+
+<!-- ══ 2. CAREER — dark ══ -->
+<section id="career" class="dark flip">
+
+  <div class="section-content">
+    <p class="section-label">Career</p>
+    <h2 class="section-title">Professional Experience</h2>
+    <div class="placeholder-box">
+      <span class="placeholder-tag">Placeholder</span>
+      <p>This section will detail your professional background, roles, and areas of expertise. Add your career history, key achievements, and technical skills.</p>
+    </div>
+  </div>
+
+  <div class="art-wrap">
+    <svg viewBox="0 0 500 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <rect width="500" height="300" fill="#0a1628"/>
+      <line x1="100" y1="30" x2="100" y2="270" stroke="#1e3a58" stroke-width="2"/>
+      <circle cx="100" cy="90"  r="9" fill="#00e87a" fill-opacity="0.15" stroke="#00e87a" stroke-width="2"/>
+      <circle cx="100" cy="170" r="9" fill="#00e87a" fill-opacity="0.15" stroke="#00e87a" stroke-width="2"/>
+      <circle cx="100" cy="245" r="9" fill="#00e87a" fill-opacity="0.15" stroke="#00e87a" stroke-width="2"/>
+      <line x1="109" y1="90"  x2="140" y2="90"  stroke="#00e87a" stroke-width="1.2" opacity="0.4"/>
+      <line x1="109" y1="170" x2="140" y2="170" stroke="#00e87a" stroke-width="1.2" opacity="0.4"/>
+      <line x1="109" y1="245" x2="140" y2="245" stroke="#00e87a" stroke-width="1.2" opacity="0.4"/>
+      <rect x="140" y="68"  width="330" height="50" rx="4" fill="#162236" stroke="#243f5e" stroke-width="1"/>
+      <rect x="140" y="148" width="330" height="50" rx="4" fill="#162236" stroke="#243f5e" stroke-width="1"/>
+      <rect x="140" y="223" width="330" height="50" rx="4" fill="#162236" stroke="#243f5e" stroke-width="1"/>
+      <rect x="158" y="79"  width="100" height="8" rx="2" fill="#243f5e"/>
+      <rect x="158" y="93"  width="200" height="6" rx="2" fill="#1e3a58"/>
+      <rect x="158" y="159" width="85"  height="8" rx="2" fill="#243f5e"/>
+      <rect x="158" y="173" width="170" height="6" rx="2" fill="#1e3a58"/>
+      <rect x="158" y="234" width="115" height="8" rx="2" fill="#243f5e"/>
+      <rect x="158" y="248" width="145" height="6" rx="2" fill="#1e3a58"/>
+      <text x="100" y="50"  text-anchor="middle" fill="#00e87a" font-size="9" font-family="monospace" opacity="0.4">PAST</text>
+      <text x="100" y="285" text-anchor="middle" fill="#1e3a58" font-size="9" font-family="monospace">NOW</text>
+    </svg>
+  </div>
+
+</section>
+
+
+<!-- ══ 3. ABOUT ME — light ══ -->
+<section id="about" class="light">
+
+  <div class="section-content">
+    <p class="section-label">About Me</p>
+    <h2 class="section-title">Who I Am</h2>
+    <div class="placeholder-box">
+      <span class="placeholder-tag">Placeholder</span>
+      <p>This section will tell your story — background, interests, philosophy, and what drives you. Add a personal bio and anything you want visitors to know about you.</p>
+    </div>
+  </div>
+
+  <div class="art-wrap">
+    <svg viewBox="0 0 500 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <rect width="500" height="300" fill="#dce6f3"/>
+      <line x1="250" y1="0"   x2="250" y2="300" stroke="#c4d8ee" stroke-width="0.75"/>
+      <line x1="0"   y1="150" x2="500" y2="150" stroke="#c4d8ee" stroke-width="0.75"/>
+      <circle cx="250" cy="148" r="110" fill="none" stroke="#c4d8ee" stroke-width="1"/>
+      <circle cx="250" cy="148" r="75"  fill="none" stroke="#c4d8ee" stroke-width="1"/>
+      <circle cx="250" cy="120" r="42"  fill="none" stroke="#006644" stroke-width="2" opacity="0.7"/>
+      <path d="M 188 210 Q 220 178 250 173 Q 280 178 312 210"
+            fill="none" stroke="#006644" stroke-width="2" opacity="0.7"/>
+      <circle cx="148" cy="90"  r="4" fill="#006644" opacity="0.35"/>
+      <circle cx="358" cy="98"  r="4" fill="#006644" opacity="0.35"/>
+      <circle cx="140" cy="215" r="3" fill="#006644" opacity="0.22"/>
+      <circle cx="365" cy="208" r="3" fill="#006644" opacity="0.22"/>
+      <line x1="212" y1="95" x2="151" y2="93"  stroke="#006644" stroke-width="0.75" opacity="0.22"/>
+      <line x1="288" y1="95" x2="355" y2="101" stroke="#006644" stroke-width="0.75" opacity="0.22"/>
+      <text x="250" y="278" text-anchor="middle" fill="#b8cfe6"
+            font-size="10" font-family="monospace" letter-spacing="4">BRYAN L CAMERON</text>
+    </svg>
+  </div>
+
+</section>
+
+
+<!-- ══ 4. CONTACT — dark ══ -->
+<section id="contact" class="dark flip">
+
+  <div class="section-content">
+    <p class="section-label">Contact</p>
+    <h2 class="section-title">Get in Touch</h2>
+    <div class="contact-fields">
+      <div class="field">Name</div>
+      <div class="field">Email</div>
+      <div class="field textarea">Message</div>
+      <button class="send-btn">Send Message</button>
+    </div>
+  </div>
+
+  <div class="art-wrap">
+    <svg viewBox="0 0 500 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <rect width="500" height="300" fill="#0a1628"/>
+      <circle cx="250" cy="150" r="25"  fill="#00e87a" fill-opacity="0.15" stroke="#00e87a" stroke-width="2.5"/>
+      <circle cx="250" cy="150" r="60"  fill="none" stroke="#00e87a" stroke-width="1"   opacity="0.4"/>
+      <circle cx="250" cy="150" r="105" fill="none" stroke="#00e87a" stroke-width="0.7" opacity="0.25"/>
+      <circle cx="250" cy="150" r="160" fill="none" stroke="#00e87a" stroke-width="0.5" opacity="0.12"/>
+      <circle cx="250" cy="150" r="220" fill="none" stroke="#00e87a" stroke-width="0.4" opacity="0.06"/>
+      <circle cx="250" cy="150" r="7"   fill="#00e87a"/>
+      <circle cx="68"  cy="62"  r="6" fill="none" stroke="#ffffff" stroke-width="1.8" opacity="0.38"/>
+      <circle cx="432" cy="55"  r="6" fill="none" stroke="#ffffff" stroke-width="1.8" opacity="0.38"/>
+      <circle cx="55"  cy="248" r="6" fill="none" stroke="#ffffff" stroke-width="1.8" opacity="0.25"/>
+      <circle cx="448" cy="240" r="6" fill="none" stroke="#ffffff" stroke-width="1.8" opacity="0.25"/>
+      <line x1="228" y1="132" x2="72"  y2="66"  stroke="#00e87a" stroke-width="0.7" opacity="0.2" stroke-dasharray="5 5"/>
+      <line x1="272" y1="132" x2="428" y2="59"  stroke="#00e87a" stroke-width="0.7" opacity="0.2" stroke-dasharray="5 5"/>
+      <line x1="230" y1="168" x2="59"  y2="244" stroke="#00e87a" stroke-width="0.7" opacity="0.14" stroke-dasharray="5 5"/>
+      <line x1="270" y1="168" x2="444" y2="236" stroke="#00e87a" stroke-width="0.7" opacity="0.14" stroke-dasharray="5 5"/>
+      <text x="250" y="285" text-anchor="middle" fill="#1e3a58" font-size="9" font-family="monospace" letter-spacing="5">SIGNAL</text>
+    </svg>
+  </div>
+
+</section>
+
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <span>© 2026 Bryan L Cameron</span>
+  <span>bryancameron.io</span>
+</footer>
 
 </body>
 </html>
