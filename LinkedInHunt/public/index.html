@@ -862,12 +862,12 @@
             />
           </div>
           <div class="field-group">
-            <label for="county">County</label>
+            <label for="city">City</label>
             <input
               type="text"
-              id="county"
-              name="county"
-              placeholder="e.g. Orange County"
+              id="city"
+              name="city"
+              placeholder="e.g. San Jose"
               autocomplete="off"
               spellcheck="false"
             />
@@ -982,14 +982,14 @@
     'use strict';
 
     // ── Config ────────────────────────────────────────────────────────────
-    // Points to the PHP backend sitting in the same folder on Hostinger.
-    // Change this if you rename or move api.php.
+    // Points to the Python/Flask backend (Render.com or local).
+    // Empty string = same origin (works on Render and locally).
     const API_BASE = '';
 
     // ── DOM refs ──────────────────────────────────────────────────────────
     const form          = document.getElementById('searchForm');
     const titleInput    = document.getElementById('jobTitle');
-    const countyInput   = document.getElementById('county');
+    const cityInput     = document.getElementById('city');
     const stateInput    = document.getElementById('state');
     const criteriaInput = document.getElementById('criteria');
     const searchBtn     = document.getElementById('searchBtn');
@@ -1004,25 +1004,25 @@
       if (!validate()) return;
 
       const title    = titleInput.value.trim();
-      const county   = countyInput.value.trim();
+      const city     = cityInput.value.trim();
       const state    = stateInput.value;
       const criteria = criteriaInput.value.trim();
 
-      currentQuery = { title, county, state, criteria };
-      await fetchJobs(title, county, state, criteria);
+      currentQuery = { title, city, state, criteria };
+      await fetchJobs(title, city, state, criteria);
     });
 
     // ── Validation ────────────────────────────────────────────────────────
     function validate () {
       let ok = true;
-      [titleInput, countyInput, stateInput].forEach(el => el.classList.remove('error'));
+      [titleInput, cityInput, stateInput].forEach(el => el.classList.remove('error'));
 
       if (!titleInput.value.trim()) {
         titleInput.classList.add('error');
         ok = false;
       }
-      if (!countyInput.value.trim()) {
-        countyInput.classList.add('error');
+      if (!cityInput.value.trim()) {
+        cityInput.classList.add('error');
         ok = false;
       }
       if (!stateInput.value) {
@@ -1033,21 +1033,21 @@
     }
 
     // Remove error state on input
-    [titleInput, countyInput, stateInput].forEach(el => {
+    [titleInput, cityInput, stateInput].forEach(el => {
       el.addEventListener('input', () => el.classList.remove('error'));
       el.addEventListener('change', () => el.classList.remove('error'));
     });
 
     // ── Fetch Jobs ────────────────────────────────────────────────────────
-    async function fetchJobs (title, county, state, criteria = '', page = 1) {
+    async function fetchJobs (title, city, state, criteria = '', page = 1) {
       setLoading(true);
       showSkeletons();
 
-      const params = new URLSearchParams({ title, county, state, page });
+      const params = new URLSearchParams({ title, city, state, page });
       if (criteria) params.set('criteria', criteria);
 
       try {
-        const res  = await fetch(`${API_BASE}api.php?${params}`);
+        const res  = await fetch(`${API_BASE}/api/jobs?${params}`);
         const data = await res.json();
 
         if (!res.ok) {
@@ -1080,7 +1080,7 @@
           <div class="results-count"><span>${total}</span> job${total !== 1 ? 's' : ''} found</div>
           <div class="results-query">
             <strong>${escHtml(currentQuery.title)}</strong> in
-            <strong>${escHtml(currentQuery.county)}, ${escHtml(currentQuery.state)}</strong>
+            <strong>${escHtml(currentQuery.city)}, ${escHtml(currentQuery.state)}</strong>
             ${hasCriteria ? ' &middot; <span style="color:#10b981;font-weight:600;">sorted by criteria match</span>' : ''}
           </div>
         </div>
@@ -1246,7 +1246,7 @@
             </svg>
           </div>
           <h3>No jobs found</h3>
-          <p>We couldn't find any postings for <strong>"${escHtml(currentQuery.title)}"</strong> in <strong>${escHtml(currentQuery.county)}, ${escHtml(currentQuery.state)}</strong>. Try broadening your search or checking back soon.</p>
+          <p>We couldn't find any postings for <strong>"${escHtml(currentQuery.title)}"</strong> in <strong>${escHtml(currentQuery.city)}, ${escHtml(currentQuery.state)}</strong>. Try broadening your search or checking back soon.</p>
         </div>
       `;
     }
@@ -1272,7 +1272,7 @@
       resultsArea.innerHTML = '';
       currentQuery = null;
       titleInput.value    = '';
-      countyInput.value   = '';
+      cityInput.value     = '';
       stateInput.value    = '';
       criteriaInput.value = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
