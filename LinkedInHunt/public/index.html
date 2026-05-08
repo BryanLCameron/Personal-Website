@@ -4,79 +4,61 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JobTrack — LinkedIn Job Finder</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    /* ── Reset & Base ──────────────────────────────────────────────────── */
+    /* ── Reset & Base ───────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #080c16;
-      --bg2:       #0d1120;
-      --surface:   rgba(255,255,255,0.04);
-      --surface2:  rgba(255,255,255,0.07);
-      --border:    rgba(255,255,255,0.09);
-      --border2:   rgba(255,255,255,0.15);
-      --primary:   #4f7df0;
-      --primary-h: #6690f5;
-      --purple:    #7c3aed;
-      --grad:      linear-gradient(135deg, #4f7df0 0%, #7c3aed 100%);
-      --grad-soft: linear-gradient(135deg, rgba(79,125,240,0.15) 0%, rgba(124,58,237,0.15) 100%);
-      --text:      #f1f5f9;
-      --text2:     #94a3b8;
-      --text3:     #64748b;
-      --green:     #10b981;
-      --amber:     #f59e0b;
-      --red:       #ef4444;
-      --radius:    14px;
-      --radius-sm: 8px;
-      --shadow:    0 4px 24px rgba(0,0,0,0.4);
-      --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+      --bg:          #090b11;
+      --surface:     rgba(255,255,255,0.05);
+      --surface-2:   rgba(255,255,255,0.08);
+      --border:      rgba(255,255,255,0.10);
+      --border-2:    rgba(255,255,255,0.16);
+      --text:        #eef2f7;
+      --text-muted:  #8291a9;
+      --text-dim:    #526078;
+      --accent:      #3f64ec;
+      --accent-soft: rgba(63,100,236,0.12);
+      --accent-glow: rgba(63,100,236,0.25);
+      --green:       #22c55e;
+      --green-soft:  rgba(34,197,94,0.12);
+      --yellow:      #f59e0b;
+      --yellow-soft: rgba(245,158,11,0.12);
+      --red:         #ef4444;
+      --red-soft:    rgba(239,68,68,0.12);
+      --radius:      14px;
+      --radius-sm:   8px;
+      --shadow:      0 4px 24px rgba(0,0,0,0.4);
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       line-height: 1.6;
-      overflow-x: hidden;
     }
 
-    /* ── Animated Background ───────────────────────────────────────────── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(79,125,240,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(124,58,237,0.10) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── Header ────────────────────────────────────────────────────────── */
+    /* ── Header ─────────────────────────────────────────────────────────── */
     header {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(8,12,22,0.85);
+      background: rgba(9,11,17,0.85);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
     }
 
     .header-inner {
-      max-width: 1200px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 0 24px;
-      height: 64px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 14px;
     }
 
     .logo {
@@ -87,360 +69,233 @@
     }
 
     .logo-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      background: var(--grad);
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
 
-    .logo-icon svg { width: 18px; height: 18px; }
-
     .logo-text {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 700;
-      letter-spacing: -0.3px;
       color: var(--text);
+      letter-spacing: -0.3px;
     }
 
-    .logo-text span {
-      background: var(--grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+    .logo-text span { color: var(--accent); }
 
     .header-badge {
+      margin-left: auto;
       font-size: 11px;
-      font-weight: 500;
-      color: var(--text3);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 20px;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
-    /* ── Main Layout ───────────────────────────────────────────────────── */
+    /* ── Main ───────────────────────────────────────────────────────────── */
     main {
-      position: relative;
-      z-index: 1;
-      max-width: 1200px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 60px 24px 80px;
+      padding: 48px 24px 80px;
     }
 
-    /* ── Hero ──────────────────────────────────────────────────────────── */
+    /* ── Hero ───────────────────────────────────────────────────────────── */
     .hero {
       text-align: center;
       margin-bottom: 48px;
     }
 
     .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: var(--primary);
-      background: rgba(79,125,240,0.1);
-      border: 1px solid rgba(79,125,240,0.25);
-      padding: 6px 14px;
-      border-radius: 20px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid rgba(63,100,236,0.3);
+      border-radius: 100px;
+      padding: 4px 14px;
       margin-bottom: 20px;
-    }
-
-    .hero-eyebrow::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--primary);
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.5; transform: scale(0.8); }
     }
 
     .hero h1 {
-      font-size: clamp(32px, 5vw, 52px);
+      font-size: clamp(28px, 5vw, 44px);
       font-weight: 800;
-      letter-spacing: -1.5px;
       line-height: 1.15;
-      margin-bottom: 16px;
+      letter-spacing: -1px;
       color: var(--text);
+      margin-bottom: 16px;
     }
 
-    .hero h1 .gradient-text {
-      background: var(--grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero p {
+    .hero-sub {
       font-size: 17px;
-      color: var(--text2);
-      max-width: 500px;
+      color: var(--text-muted);
+      max-width: 480px;
       margin: 0 auto;
     }
 
-    /* ── Search Card ───────────────────────────────────────────────────── */
+    /* ── Search Card ────────────────────────────────────────────────────── */
     .search-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 32px;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      box-shadow: var(--shadow-lg);
-      margin-bottom: 48px;
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
     }
 
-    .form-grid {
+    .form-row {
       display: grid;
-      grid-template-columns: 1fr 1fr 220px;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
-    @media (max-width: 768px) {
-      .form-grid { grid-template-columns: 1fr; }
+    @media (max-width: 640px) {
+      .form-row { grid-template-columns: 1fr; }
     }
 
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
 
     .field-group label {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.06em;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
-      color: var(--text2);
+      color: var(--text-dim);
     }
 
     .field-group input,
-    .field-group select {
-      background: rgba(255,255,255,0.06);
+    .field-group select,
+    .field-group textarea {
+      background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       color: var(--text);
-      font-family: inherit;
       font-size: 15px;
-      height: 48px;
-      padding: 0 16px;
+      padding: 10px 14px;
       outline: none;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
       width: 100%;
-      appearance: none;
-      -webkit-appearance: none;
+      font-family: inherit;
     }
 
-    .field-group select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
-      cursor: pointer;
-    }
+    .field-group input::placeholder,
+    .field-group textarea::placeholder { color: var(--text-dim); }
 
-    .field-group select option {
-      background: #1a2035;
-      color: var(--text);
-    }
-
-    .field-group input::placeholder { color: var(--text3); }
+    .field-group select option { background: #1a1f2e; }
 
     .field-group input:focus,
-    .field-group select:focus {
-      border-color: var(--primary);
-      background: rgba(79,125,240,0.08);
-      box-shadow: 0 0 0 3px rgba(79,125,240,0.15);
+    .field-group select:focus,
+    .field-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
     }
 
     .field-group input.error,
     .field-group select.error {
       border-color: var(--red);
-      box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+      box-shadow: 0 0 0 3px var(--red-soft);
     }
 
-    .search-actions {
+    .criteria-row { margin-bottom: 20px; }
+
+    .criteria-row textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+    }
+
+    .criteria-hint {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    .search-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .search-hint {
-      font-size: 13px;
-      color: var(--text3);
-    }
-
-    .search-hint strong { color: var(--text2); font-weight: 500; }
-
-    /* ── Buttons ───────────────────────────────────────────────────────── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
+      justify-content: center;
       gap: 8px;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 600;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      padding: 0 24px;
-      height: 48px;
-      transition: all 0.2s;
-      white-space: nowrap;
-      text-decoration: none;
+      transition: background 0.2s, transform 0.1s, opacity 0.2s;
+      letter-spacing: 0.2px;
     }
 
-    .btn-primary {
-      background: var(--grad);
-      color: #fff;
-      box-shadow: 0 4px 16px rgba(79,125,240,0.35);
-    }
+    .search-btn:hover  { background: #3056d3; }
+    .search-btn:active { transform: scale(0.99); }
+    .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(79,125,240,0.45);
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-outline {
-      background: var(--surface);
-      color: var(--text2);
-      border: 1px solid var(--border);
-    }
-
-    .btn-outline:hover {
-      background: var(--surface2);
-      color: var(--text);
-      border-color: var(--border2);
-    }
-
-    .btn-apply {
-      background: var(--grad);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 600;
-      height: 38px;
-      padding: 0 16px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-
-    .btn-apply:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(79,125,240,0.4);
-    }
-
-    /* ── Spinner ───────────────────────────────────────────────────────── */
     .spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
-      display: inline-block;
+      display: none;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Results Header ────────────────────────────────────────────────── */
+    /* ── Results Header ─────────────────────────────────────────────────── */
     .results-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
     }
 
     .results-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .results-count {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .results-count span {
-      background: var(--grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .results-query {
       font-size: 14px;
-      color: var(--text2);
+      color: var(--text-muted);
     }
 
-    .results-query strong {
-      color: var(--text);
-      font-weight: 600;
+    .results-meta strong { color: var(--text); }
+
+    .sort-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid rgba(63,100,236,0.3);
+      border-radius: 100px;
+      padding: 3px 12px;
     }
 
-    /* ── Job Grid ──────────────────────────────────────────────────────── */
-    .jobs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 20px;
-    }
+    /* ── Job Card ───────────────────────────────────────────────────────── */
+    .jobs-list { display: flex; flex-direction: column; gap: 16px; }
 
-    @media (max-width: 420px) {
-      .jobs-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ── Job Card ──────────────────────────────────────────────────────── */
     .job-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-      animation: fadeUp 0.35s ease both;
+      padding: 22px 24px;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      animation: fadeUp 0.3s ease both;
     }
 
     .job-card:hover {
-      border-color: rgba(79,125,240,0.35);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+      border-color: var(--border-2);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
     }
 
     @keyframes fadeUp {
@@ -448,374 +303,204 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .job-card:nth-child(1)  { animation-delay: 0.04s; }
-    .job-card:nth-child(2)  { animation-delay: 0.08s; }
-    .job-card:nth-child(3)  { animation-delay: 0.12s; }
-    .job-card:nth-child(4)  { animation-delay: 0.16s; }
-    .job-card:nth-child(5)  { animation-delay: 0.20s; }
-    .job-card:nth-child(6)  { animation-delay: 0.24s; }
-    .job-card:nth-child(7)  { animation-delay: 0.28s; }
-    .job-card:nth-child(8)  { animation-delay: 0.32s; }
-    .job-card:nth-child(9)  { animation-delay: 0.36s; }
-    .job-card:nth-child(10) { animation-delay: 0.40s; }
-
-    /* Card Header */
-    .card-header {
+    .job-card-top {
       display: flex;
       align-items: flex-start;
-      gap: 14px;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
     }
 
-    .company-logo {
-      width: 46px;
-      height: 46px;
-      border-radius: 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text2);
-      overflow: hidden;
-      flex-shrink: 0;
-      text-transform: uppercase;
-    }
-
-    .company-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 6px;
-    }
-
-    .card-title-group {
-      flex: 1;
-      min-width: 0;
-    }
+    .job-title-row { flex: 1; min-width: 0; }
 
     .job-title {
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 17px;
+      font-weight: 700;
       color: var(--text);
-      line-height: 1.3;
-      letter-spacing: -0.2px;
       margin-bottom: 4px;
+      line-height: 1.3;
     }
 
-    .company-name {
-      font-size: 13px;
-      color: var(--text2);
+    .job-company {
+      font-size: 14px;
+      color: var(--text-muted);
       font-weight: 500;
     }
 
-    /* Card Meta */
-    .card-meta {
+    .match-badge {
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 100px;
+      padding: 4px 12px;
+      white-space: nowrap;
+    }
+
+    .match-high   { background: var(--green-soft);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3); }
+    .match-medium { background: var(--yellow-soft); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+    .match-low    { background: var(--red-soft);    color: var(--red);    border: 1px solid rgba(239,68,68,0.3); }
+
+    .job-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-bottom: 12px;
     }
 
-    .meta-chip {
-      display: inline-flex;
+    .meta-pill {
+      display: flex;
       align-items: center;
       gap: 5px;
       font-size: 12px;
-      font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 6px;
-      color: var(--text2);
-      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      background: var(--surface-2);
       border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 3px 10px;
     }
 
-    .meta-chip svg { flex-shrink: 0; }
+    .meta-pill svg { opacity: 0.6; flex-shrink: 0; }
 
-    .chip-remote {
-      color: var(--green);
-      background: rgba(16,185,129,0.1);
-      border-color: rgba(16,185,129,0.2);
-    }
+    .remote-pill { color: var(--accent); background: var(--accent-soft); border-color: rgba(63,100,236,0.3); }
 
-    .chip-type {
-      color: var(--primary);
-      background: rgba(79,125,240,0.1);
-      border-color: rgba(79,125,240,0.2);
-    }
-
-    .chip-salary {
-      color: var(--amber);
-      background: rgba(245,158,11,0.1);
-      border-color: rgba(245,158,11,0.2);
-    }
-
-    /* Card Description */
     .job-description {
-      font-size: 13px;
-      color: var(--text3);
+      font-size: 13.5px;
+      color: var(--text-muted);
       line-height: 1.6;
+      margin-bottom: 14px;
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
 
-    /* Card Footer */
-    .card-footer {
+    .keyword-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .keyword-pill {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(63,100,236,0.25);
+      border-radius: 100px;
+      padding: 2px 10px;
+    }
+
+    .job-card-bottom {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-top: auto;
-      padding-top: 4px;
+      flex-wrap: wrap;
     }
 
-    .posted-date {
-      font-size: 12px;
-      color: var(--text3);
+    .posted-date { font-size: 12px; color: var(--text-dim); }
+
+    .apply-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      transition: background 0.2s;
+      white-space: nowrap;
     }
 
-    /* ── Skeleton Loading ──────────────────────────────────────────────── */
-    .skeleton-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 20px;
-    }
+    .apply-btn:hover { background: #3056d3; }
 
+    /* ── Skeleton ───────────────────────────────────────────────────────── */
     .skeleton-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+      padding: 22px 24px;
     }
 
-    .skel {
-      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    .skeleton-line {
+      background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.09) 50%, var(--surface-2) 75%);
       background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
       border-radius: 6px;
-      animation: shimmer 1.4s ease-in-out infinite;
+      margin-bottom: 10px;
     }
 
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
 
-    .skel-header { display: flex; gap: 14px; }
-    .skel-logo   { width: 46px; height: 46px; border-radius: 10px; flex-shrink: 0; }
-    .skel-title  { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-    .skel-h1     { height: 16px; width: 70%; }
-    .skel-h2     { height: 13px; width: 45%; }
-    .skel-chips  { display: flex; gap: 8px; }
-    .skel-chip   { height: 26px; width: 80px; border-radius: 6px; }
-    .skel-body   { height: 13px; }
-    .skel-body.s2 { width: 85%; }
-    .skel-body.s3 { width: 60%; }
-    .skel-footer { display: flex; justify-content: space-between; }
-    .skel-date   { height: 12px; width: 90px; }
-    .skel-btn    { height: 38px; width: 100px; border-radius: 8px; }
-
-    /* ── Empty / Error States ──────────────────────────────────────────── */
+    /* ── States ─────────────────────────────────────────────────────────── */
     .state-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 60px 32px;
+      padding: 56px 32px;
       text-align: center;
-      max-width: 480px;
-      margin: 0 auto;
     }
 
     .state-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 16px;
-      margin: 0 auto 20px;
+      width: 64px; height: 64px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px;
     }
 
-    .state-icon.empty { background: rgba(79,125,240,0.12); }
-    .state-icon.error { background: rgba(239,68,68,0.12); }
+    .state-icon.error-icon { background: var(--red-soft); }
+    .state-icon.empty-icon { background: var(--accent-soft); }
 
-    .state-card h3 {
-      font-size: 18px;
+    .state-title {
+      font-size: 20px;
       font-weight: 700;
-      margin-bottom: 8px;
-      letter-spacing: -0.3px;
+      margin-bottom: 10px;
     }
 
-    .state-card p {
-      font-size: 14px;
-      color: var(--text2);
+    .state-body {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 400px;
+      margin: 0 auto 24px;
       line-height: 1.6;
     }
 
-    /* ── Criteria Section ─────────────────────────────────────────────── */
-    .criteria-section {
-      border-top: 1px solid var(--border);
-      padding-top: 20px;
-      margin-top: 4px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .criteria-label-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .criteria-label {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--text2);
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .criteria-label .opt-badge {
-      font-size: 10px;
-      font-weight: 500;
-      color: var(--text3);
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      padding: 2px 7px;
-      border-radius: 4px;
-      letter-spacing: 0.04em;
-      text-transform: none;
-    }
-
-    .criteria-hint {
-      font-size: 12px;
-      color: var(--text3);
-    }
-
-    .criteria-textarea {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 14px;
-      line-height: 1.6;
-      padding: 12px 16px;
-      resize: vertical;
-      min-height: 100px;
-      outline: none;
-      width: 100%;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    }
-
-    .criteria-textarea::placeholder { color: var(--text3); }
-
-    .criteria-textarea:focus {
-      border-color: var(--primary);
-      background: rgba(79,125,240,0.08);
-      box-shadow: 0 0 0 3px rgba(79,125,240,0.15);
-    }
-
-    /* ── Match Score Badge ─────────────────────────────────────────────── */
-    .match-badge {
+    .retry-btn {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 9px;
-      border-radius: 20px;
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .match-badge::before {
-      content: '';
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    .match-high {
-      color: #10b981;
-      background: rgba(16,185,129,0.12);
-      border: 1px solid rgba(16,185,129,0.25);
-    }
-
-    .match-mid {
-      color: #f59e0b;
-      background: rgba(245,158,11,0.12);
-      border: 1px solid rgba(245,158,11,0.25);
-    }
-
-    .match-low {
-      color: var(--text3);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-    }
-
-    /* ── Matched Keywords ──────────────────────────────────────────────── */
-    .match-keywords {
-      display: flex;
-      flex-wrap: wrap;
       gap: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      padding: 10px 22px;
+      cursor: pointer;
+      transition: background 0.2s;
     }
 
-    .kw-pill {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--primary);
-      background: rgba(79,125,240,0.1);
-      border: 1px solid rgba(79,125,240,0.2);
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
+    .retry-btn:hover { background: rgba(255,255,255,0.1); }
 
-    /* Highlight cards with great matches */
-    .job-card.match-top {
-      border-color: rgba(16,185,129,0.3);
-    }
-
-    .job-card.match-top:hover {
-      border-color: rgba(16,185,129,0.5);
-    }
-
-    /* ── Footer ────────────────────────────────────────────────────────── */
+    /* ── Footer ─────────────────────────────────────────────────────────── */
     footer {
-      position: relative;
-      z-index: 1;
       text-align: center;
-      padding: 24px;
+      padding: 32px 24px;
       border-top: 1px solid var(--border);
       font-size: 13px;
-      color: var(--text3);
+      color: var(--text-dim);
     }
 
-    footer a { color: var(--primary); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-
-    /* ── Utility ───────────────────────────────────────────────────────── */
-    .hidden { display: none !important; }
-
-    .fade-in {
-      animation: fadeIn 0.3s ease both;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
   </style>
 </head>
 <body>
@@ -825,8 +510,7 @@
     <div class="header-inner">
       <a href="/" class="logo">
         <div class="logo-icon">
-          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 2L3 6v8l7 4 7-4V6l-7-4z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 6l7 4 7-4M10 10v10" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </div>
@@ -842,14 +526,14 @@
     <!-- Hero -->
     <div class="hero">
       <div class="hero-eyebrow">Real-time LinkedIn Jobs</div>
-      <h1>Find Your Next<br><span class="gradient-text">Opportunity</span></h1>
-      <p>Search live LinkedIn job postings by title and region, all in one place.</p>
+      <h1>Find Your Next<br>Opportunity</h1>
+      <p class="hero-sub">Search live LinkedIn job postings by title and location, all in one place.</p>
     </div>
 
     <!-- Search Form -->
     <div class="search-card">
       <form id="searchForm" novalidate>
-        <div class="form-grid">
+        <div class="form-row">
           <div class="field-group">
             <label for="jobTitle">Job Title</label>
             <input
@@ -875,91 +559,42 @@
           <div class="field-group">
             <label for="state">State</label>
             <select id="state" name="state">
-              <option value="">Select a state…</option>
-              <option value="Alabama">Alabama</option>
-              <option value="Alaska">Alaska</option>
-              <option value="Arizona">Arizona</option>
-              <option value="Arkansas">Arkansas</option>
-              <option value="California">California</option>
-              <option value="Colorado">Colorado</option>
-              <option value="Connecticut">Connecticut</option>
-              <option value="Delaware">Delaware</option>
-              <option value="Florida">Florida</option>
-              <option value="Georgia">Georgia</option>
-              <option value="Hawaii">Hawaii</option>
-              <option value="Idaho">Idaho</option>
-              <option value="Illinois">Illinois</option>
-              <option value="Indiana">Indiana</option>
-              <option value="Iowa">Iowa</option>
-              <option value="Kansas">Kansas</option>
-              <option value="Kentucky">Kentucky</option>
-              <option value="Louisiana">Louisiana</option>
-              <option value="Maine">Maine</option>
-              <option value="Maryland">Maryland</option>
-              <option value="Massachusetts">Massachusetts</option>
-              <option value="Michigan">Michigan</option>
-              <option value="Minnesota">Minnesota</option>
-              <option value="Mississippi">Mississippi</option>
-              <option value="Missouri">Missouri</option>
-              <option value="Montana">Montana</option>
-              <option value="Nebraska">Nebraska</option>
-              <option value="Nevada">Nevada</option>
-              <option value="New Hampshire">New Hampshire</option>
-              <option value="New Jersey">New Jersey</option>
-              <option value="New Mexico">New Mexico</option>
-              <option value="New York">New York</option>
-              <option value="North Carolina">North Carolina</option>
-              <option value="North Dakota">North Dakota</option>
-              <option value="Ohio">Ohio</option>
-              <option value="Oklahoma">Oklahoma</option>
-              <option value="Oregon">Oregon</option>
-              <option value="Pennsylvania">Pennsylvania</option>
-              <option value="Rhode Island">Rhode Island</option>
-              <option value="South Carolina">South Carolina</option>
-              <option value="South Dakota">South Dakota</option>
-              <option value="Tennessee">Tennessee</option>
-              <option value="Texas">Texas</option>
-              <option value="Utah">Utah</option>
-              <option value="Vermont">Vermont</option>
-              <option value="Virginia">Virginia</option>
-              <option value="Washington">Washington</option>
-              <option value="West Virginia">West Virginia</option>
-              <option value="Wisconsin">Wisconsin</option>
-              <option value="Wyoming">Wyoming</option>
-              <option value="District of Columbia">District of Columbia</option>
+              <option value="">Select state…</option>
+              <option>Alabama</option><option>Alaska</option><option>Arizona</option>
+              <option>Arkansas</option><option>California</option><option>Colorado</option>
+              <option>Connecticut</option><option>Delaware</option><option>Florida</option>
+              <option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+              <option>Illinois</option><option>Indiana</option><option>Iowa</option>
+              <option>Kansas</option><option>Kentucky</option><option>Louisiana</option>
+              <option>Maine</option><option>Maryland</option><option>Massachusetts</option>
+              <option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+              <option>Missouri</option><option>Montana</option><option>Nebraska</option>
+              <option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
+              <option>New Mexico</option><option>New York</option><option>North Carolina</option>
+              <option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+              <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option>
+              <option>South Carolina</option><option>South Dakota</option><option>Tennessee</option>
+              <option>Texas</option><option>Utah</option><option>Vermont</option>
+              <option>Virginia</option><option>Washington</option><option>West Virginia</option>
+              <option>Wisconsin</option><option>Wyoming</option>
             </select>
           </div>
         </div>
-        <!-- Criteria -->
-        <div class="criteria-section">
-          <div class="criteria-label-row">
-            <label class="criteria-label" for="criteria">
-              Job Criteria
-              <span class="opt-badge">Optional</span>
-            </label>
-            <span class="criteria-hint">Describe your ideal role — results will be ranked by match</span>
-          </div>
+
+        <div class="field-group criteria-row">
+          <label for="criteria">Job Criteria <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
           <textarea
             id="criteria"
             name="criteria"
-            class="criteria-textarea"
-            placeholder="e.g. I'm looking for a remote-friendly senior role at a growth-stage startup. Ideally Python or TypeScript, with machine learning exposure. Equity comp is important, and I'd prefer a collaborative team under 200 people."
-            rows="3"
+            placeholder="Describe your ideal role — e.g. remote Python developer with ML experience, Series B startup, equity comp…"
           ></textarea>
+          <p class="criteria-hint">Jobs will be scored and sorted by how well they match your criteria.</p>
         </div>
 
-        <div class="search-actions">
-          <p class="search-hint">
-            Searches jobs posted within the <strong>last 30 days</strong> matching your title and region.
-          </p>
-          <button type="submit" class="btn btn-primary" id="searchBtn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="7" cy="7" r="5" stroke="white" stroke-width="1.5"/>
-              <path d="M11 11l3 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            Search Jobs
-          </button>
-        </div>
+        <button type="submit" class="search-btn" id="searchBtn">
+          <span class="spinner" id="spinner"></span>
+          <span id="btnText">Search Jobs</span>
+        </button>
       </form>
     </div>
 
@@ -982,9 +617,9 @@
     'use strict';
 
     // ── Config ────────────────────────────────────────────────────────────
-    // Points to the Python/Flask backend (Render.com or local).
-    // Empty string = same origin (works on Render and locally).
-    const API_BASE = '';
+    // Set this to your Render URL after deploying, e.g.:
+    // const API_BASE = 'https://jobtrack.onrender.com';
+    const API_BASE = 'https://personal-website-h6u2.onrender.com';
 
     // ── DOM refs ──────────────────────────────────────────────────────────
     const form          = document.getElementById('searchForm');
@@ -993,6 +628,8 @@
     const stateInput    = document.getElementById('state');
     const criteriaInput = document.getElementById('criteria');
     const searchBtn     = document.getElementById('searchBtn');
+    const spinner       = document.getElementById('spinner');
+    const btnText       = document.getElementById('btnText');
     const resultsArea   = document.getElementById('resultsArea');
 
     // ── State ─────────────────────────────────────────────────────────────
@@ -1017,33 +654,23 @@
       let ok = true;
       [titleInput, cityInput, stateInput].forEach(el => el.classList.remove('error'));
 
-      if (!titleInput.value.trim()) {
-        titleInput.classList.add('error');
-        ok = false;
-      }
-      if (!cityInput.value.trim()) {
-        cityInput.classList.add('error');
-        ok = false;
-      }
-      if (!stateInput.value) {
-        stateInput.classList.add('error');
-        ok = false;
-      }
+      if (!titleInput.value.trim()) { titleInput.classList.add('error'); ok = false; }
+      if (!cityInput.value.trim())  { cityInput.classList.add('error');  ok = false; }
+      if (!stateInput.value)        { stateInput.classList.add('error'); ok = false; }
       return ok;
     }
 
-    // Remove error state on input
     [titleInput, cityInput, stateInput].forEach(el => {
-      el.addEventListener('input', () => el.classList.remove('error'));
+      el.addEventListener('input',  () => el.classList.remove('error'));
       el.addEventListener('change', () => el.classList.remove('error'));
     });
 
     // ── Fetch Jobs ────────────────────────────────────────────────────────
-    async function fetchJobs (title, city, state, criteria = '', page = 1) {
+    async function fetchJobs (title, city, state, criteria = '') {
       setLoading(true);
       showSkeletons();
 
-      const params = new URLSearchParams({ title, city, state, page });
+      const params = new URLSearchParams({ title, city, state });
       if (criteria) params.set('criteria', criteria);
 
       try {
@@ -1062,271 +689,172 @@
       }
     }
 
+    // ── Loading state ─────────────────────────────────────────────────────
+    function setLoading (on) {
+      searchBtn.disabled   = on;
+      spinner.style.display = on ? 'block' : 'none';
+      btnText.textContent   = on ? 'Searching…' : 'Search Jobs';
+    }
+
+    function showSkeletons () {
+      resultsArea.innerHTML = Array.from({ length: 4 }, () => `
+        <div class="skeleton-card" style="margin-bottom:16px">
+          <div class="skeleton-line" style="height:20px;width:60%;margin-bottom:8px"></div>
+          <div class="skeleton-line" style="height:14px;width:35%;margin-bottom:16px"></div>
+          <div class="skeleton-line" style="height:13px;width:90%;margin-bottom:6px"></div>
+          <div class="skeleton-line" style="height:13px;width:75%"></div>
+        </div>
+      `).join('');
+    }
+
     // ── Render Results ────────────────────────────────────────────────────
-    function renderResults ({ jobs, query, total, criteria }) {
-      if (!jobs || jobs.length === 0) {
-        renderEmpty(query);
+    function renderResults (data) {
+      const { jobs = [], total, query, criteria } = data;
+
+      if (!jobs.length) {
+        resultsArea.innerHTML = `
+          <div class="state-card">
+            <div class="state-icon empty-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </div>
+            <p class="state-title">No jobs found</p>
+            <p class="state-body">
+              We couldn't find any postings for <strong>"${escHtml(currentQuery.title)}"</strong>
+              in <strong>${escHtml(currentQuery.city)}, ${escHtml(currentQuery.state)}</strong>.
+              Try broadening your search or checking back soon.
+            </p>
+            <button class="retry-btn" onclick="document.getElementById('jobTitle').focus()">Modify Search</button>
+          </div>`;
         return;
       }
 
       const hasCriteria = criteria && criteria.trim().length > 0;
-
-      resultsArea.innerHTML = '';
-
-      const header = document.createElement('div');
-      header.className = 'results-header fade-in';
-      header.innerHTML = `
-        <div class="results-meta">
-          <div class="results-count"><span>${total}</span> job${total !== 1 ? 's' : ''} found</div>
-          <div class="results-query">
+      const headerHtml = `
+        <div class="results-header">
+          <p class="results-meta">
+            Found <strong>${total} job${total !== 1 ? 's' : ''}</strong> for
             <strong>${escHtml(currentQuery.title)}</strong> in
             <strong>${escHtml(currentQuery.city)}, ${escHtml(currentQuery.state)}</strong>
-            ${hasCriteria ? ' &middot; <span style="color:#10b981;font-weight:600;">sorted by criteria match</span>' : ''}
-          </div>
-        </div>
-        <button class="btn btn-outline" id="clearBtn">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          Clear
-        </button>
-      `;
-      resultsArea.appendChild(header);
+          </p>
+          ${hasCriteria ? '<span class="sort-badge">Sorted by Match</span>' : ''}
+        </div>`;
 
-      document.getElementById('clearBtn').addEventListener('click', clearResults);
-
-      const grid = document.createElement('div');
-      grid.className = 'jobs-grid';
-      jobs.forEach(job => grid.appendChild(createJobCard(job)));
-      resultsArea.appendChild(grid);
-
-      // Scroll to results
-      resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const cardsHtml = jobs.map((job, i) => renderCard(job, i, hasCriteria)).join('');
+      resultsArea.innerHTML = headerHtml + '<div class="jobs-list">' + cardsHtml + '</div>';
     }
 
-    // ── Create Job Card ───────────────────────────────────────────────────
-    function createJobCard (job) {
-      const card = document.createElement('div');
-      card.className = 'job-card';
-
-      const empType = formatEmploymentType(job.employmentType);
-      const timeAgo = job.postedAt ? formatTimeAgo(job.postedAt) : null;
-      const score   = job.matchScore;    // null when no criteria given
-      const hasCriteria = score !== null && score !== undefined;
-
-      // Top-match highlight border
-      if (hasCriteria && score >= 60) card.classList.add('match-top');
-
-      // Logo
-      const logoEl = job.logo
-        ? `<img src="${escHtml(job.logo)}" alt="${escHtml(job.company)}" loading="lazy" onerror="this.parentElement.textContent='${escHtml(job.company.charAt(0))}'"/>`
-        : escHtml(job.company.charAt(0));
+    function renderCard (job, index, hasCriteria) {
+      const delay = Math.min(index * 50, 300);
 
       // Match badge
-      let matchBadge = '';
-      if (hasCriteria) {
-        const cls  = score >= 60 ? 'match-high' : score >= 30 ? 'match-mid' : 'match-low';
-        const label = score >= 60 ? 'Great match' : score >= 30 ? 'Partial match' : 'Low match';
-        matchBadge = `<span class="match-badge ${cls}">${score}% — ${label}</span>`;
+      let badgeHtml = '';
+      if (hasCriteria && job.matchScore !== null && job.matchScore !== undefined) {
+        const score = job.matchScore;
+        const cls   = score >= 65 ? 'match-high' : score >= 35 ? 'match-medium' : 'match-low';
+        badgeHtml = `<span class="match-badge ${cls}">${score}% Match</span>`;
       }
 
-      // Matched keyword pills
-      const keywords = job.matchKeywords || [];
-      const kwPills = keywords.length
-        ? `<div class="match-keywords">${keywords.map(k => `<span class="kw-pill">${escHtml(k)}</span>`).join('')}</div>`
-        : '';
-
-      // Info chips
-      const chips = [];
-      if (job.isRemote) {
-        chips.push(`<span class="meta-chip chip-remote">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/>
-            <path d="M1.5 6h9M6 1.5a8 8 0 010 9M6 1.5a8 8 0 000 9" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-          Remote
-        </span>`);
-      }
+      // Meta pills
+      const metaPills = [];
       if (job.location) {
-        chips.push(`<span class="meta-chip">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 1a3.5 3.5 0 013.5 3.5C9.5 7.5 6 11 6 11S2.5 7.5 2.5 4.5A3.5 3.5 0 016 1z" stroke="currentColor" stroke-width="1.2"/>
-            <circle cx="6" cy="4.5" r="1.2" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-          ${escHtml(job.location)}
-        </span>`);
+        metaPills.push(`
+          <span class="meta-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${escHtml(job.location)}
+          </span>`);
       }
-      if (empType) {
-        chips.push(`<span class="meta-chip chip-type">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="1" y="3" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-            <path d="M4 3V2a2 2 0 014 0v1" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-          ${escHtml(empType)}
-        </span>`);
+      if (job.isRemote) {
+        metaPills.push(`<span class="meta-pill remote-pill">Remote</span>`);
+      }
+      if (job.employmentType) {
+        const labels = { FULLTIME:'Full-time', PARTTIME:'Part-time', CONTRACTOR:'Contract', INTERN:'Internship', TEMPORARY:'Temporary' };
+        metaPills.push(`<span class="meta-pill">${labels[job.employmentType] || job.employmentType}</span>`);
       }
       if (job.salary) {
-        chips.push(`<span class="meta-chip chip-salary">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/>
-            <path d="M6 3v6M4.5 4.5h2a1 1 0 010 2H5a1 1 0 000 2h2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-          ${escHtml(job.salary)}
-        </span>`);
+        metaPills.push(`
+          <span class="meta-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            ${escHtml(job.salary)}
+          </span>`);
       }
 
-      card.innerHTML = `
-        <div class="card-header">
-          <div class="company-logo">${logoEl}</div>
-          <div class="card-title-group">
-            <div class="job-title">${escHtml(job.title)}</div>
-            <div class="company-name">${escHtml(job.company)}</div>
-          </div>
-          ${matchBadge}
-        </div>
-        ${chips.length ? `<div class="card-meta">${chips.join('')}</div>` : ''}
-        ${job.description ? `<p class="job-description">${escHtml(job.description)}</p>` : ''}
-        ${kwPills}
-        <div class="card-footer">
-          <span class="posted-date">${timeAgo ? `Posted ${timeAgo}` : 'Recently posted'}</span>
-          <a href="${escHtml(job.applyLink)}" target="_blank" rel="noopener noreferrer" class="btn-apply">
-            View Job
-            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-              <path d="M1 10L10 1M10 1H4M10 1v6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-        </div>
-      `;
+      // Keyword pills
+      const kwHtml = (job.matchKeywords && job.matchKeywords.length)
+        ? `<div class="keyword-pills">${job.matchKeywords.map(k => `<span class="keyword-pill">${escHtml(k)}</span>`).join('')}</div>`
+        : '';
 
-      return card;
-    }
+      // Description
+      const descHtml = job.description
+        ? `<p class="job-description">${escHtml(job.description)}</p>`
+        : '';
 
-    // ── Skeleton Loading ──────────────────────────────────────────────────
-    function showSkeletons () {
-      resultsArea.innerHTML = '';
-      const grid = document.createElement('div');
-      grid.className = 'skeleton-grid';
-
-      for (let i = 0; i < 6; i++) {
-        grid.innerHTML += `
-          <div class="skeleton-card">
-            <div class="skel-header">
-              <div class="skel skel-logo"></div>
-              <div class="skel-title">
-                <div class="skel skel-h1"></div>
-                <div class="skel skel-h2"></div>
-              </div>
-            </div>
-            <div class="skel-chips">
-              <div class="skel skel-chip"></div>
-              <div class="skel skel-chip"></div>
-            </div>
-            <div class="skel skel-body"></div>
-            <div class="skel skel-body s2"></div>
-            <div class="skel skel-body s3"></div>
-            <div class="skel-footer">
-              <div class="skel skel-date"></div>
-              <div class="skel skel-btn"></div>
-            </div>
-          </div>
-        `;
+      // Posted date
+      let postedHtml = '';
+      if (job.postedAt) {
+        try {
+          const d = new Date(job.postedAt);
+          const diffDays = Math.floor((Date.now() - d.getTime()) / 86400000);
+          const label = diffDays === 0 ? 'Today'
+                      : diffDays === 1 ? 'Yesterday'
+                      : diffDays < 30  ? `${diffDays}d ago`
+                      : d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+          postedHtml = `<span class="posted-date">Posted ${label}</span>`;
+        } catch (_) {}
       }
-      resultsArea.appendChild(grid);
+
+      return `
+        <div class="job-card" style="animation-delay:${delay}ms">
+          <div class="job-card-top">
+            <div class="job-title-row">
+              <p class="job-title">${escHtml(job.title)}</p>
+              <p class="job-company">${escHtml(job.company || '')}</p>
+            </div>
+            ${badgeHtml}
+          </div>
+          <div class="job-meta">${metaPills.join('')}</div>
+          ${descHtml}
+          ${kwHtml}
+          <div class="job-card-bottom">
+            ${postedHtml}
+            <a class="apply-btn" href="${escHtml(job.applyLink)}" target="_blank" rel="noopener noreferrer">
+              Apply on LinkedIn
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          </div>
+        </div>`;
     }
 
-    // ── Empty State ───────────────────────────────────────────────────────
-    function renderEmpty (query) {
+    // ── Error state ───────────────────────────────────────────────────────
+    function renderError (msg) {
       resultsArea.innerHTML = `
-        <div class="state-card fade-in">
-          <div class="state-icon empty">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <circle cx="13" cy="13" r="9" stroke="#4f7df0" stroke-width="1.8"/>
-              <path d="M20 20l6 6" stroke="#4f7df0" stroke-width="1.8" stroke-linecap="round"/>
-              <path d="M10 13h6M13 10v6" stroke="#4f7df0" stroke-width="1.8" stroke-linecap="round"/>
+        <div class="state-card">
+          <div class="state-icon error-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
           </div>
-          <h3>No jobs found</h3>
-          <p>We couldn't find any postings for <strong>"${escHtml(currentQuery.title)}"</strong> in <strong>${escHtml(currentQuery.city)}, ${escHtml(currentQuery.state)}</strong>. Try broadening your search or checking back soon.</p>
-        </div>
-      `;
-    }
-
-    // ── Error State ───────────────────────────────────────────────────────
-    function renderError (message) {
-      resultsArea.innerHTML = `
-        <div class="state-card fade-in">
-          <div class="state-icon error">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <circle cx="14" cy="14" r="11" stroke="#ef4444" stroke-width="1.8"/>
-              <path d="M14 8v7M14 19v1" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3>Something went wrong</h3>
-          <p>${escHtml(message)}</p>
-        </div>
-      `;
-    }
-
-    // ── Clear Results ─────────────────────────────────────────────────────
-    function clearResults () {
-      resultsArea.innerHTML = '';
-      currentQuery = null;
-      titleInput.value    = '';
-      cityInput.value     = '';
-      stateInput.value    = '';
-      criteriaInput.value = '';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ── Loading State ─────────────────────────────────────────────────────
-    function setLoading (loading) {
-      searchBtn.disabled = loading;
-      searchBtn.innerHTML = loading
-        ? `<span class="spinner"></span> Searching…`
-        : `<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-             <circle cx="7" cy="7" r="5" stroke="white" stroke-width="1.5"/>
-             <path d="M11 11l3 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-           </svg>
-           Search Jobs`;
+          <p class="state-title">Something went wrong</p>
+          <p class="state-body">${escHtml(msg)}</p>
+          <button class="retry-btn" onclick="document.getElementById('searchForm').dispatchEvent(new Event('submit'))">
+            Try Again
+          </button>
+        </div>`;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
     function escHtml (str) {
-      return String(str ?? '')
+      if (!str) return '';
+      return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/"/g, '&quot;');
     }
 
-    function formatEmploymentType (type) {
-      if (!type) return null;
-      const map = {
-        FULLTIME:   'Full-time',
-        PARTTIME:   'Part-time',
-        CONTRACTOR: 'Contract',
-        INTERN:     'Internship',
-        TEMPORARY:  'Temporary'
-      };
-      return map[type.toUpperCase()] || type;
-    }
-
-    function formatTimeAgo (isoDate) {
-      const diff = Date.now() - new Date(isoDate).getTime();
-      const mins  = Math.floor(diff / 60000);
-      const hours = Math.floor(mins / 60);
-      const days  = Math.floor(hours / 24);
-
-      if (days >= 30) return `${Math.floor(days / 30)}mo ago`;
-      if (days >= 7)  return `${Math.floor(days / 7)}w ago`;
-      if (days >= 1)  return `${days}d ago`;
-      if (hours >= 1) return `${hours}h ago`;
-      if (mins >= 1)  return `${mins}m ago`;
-      return 'just now';
-    }
-
-  })();
+  }());
   </script>
 
 </body>
