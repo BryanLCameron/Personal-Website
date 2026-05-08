@@ -981,6 +981,11 @@
   (function () {
     'use strict';
 
+    // ── Config ────────────────────────────────────────────────────────────
+    // Points to the PHP backend sitting in the same folder on Hostinger.
+    // Change this if you rename or move api.php.
+    const API_BASE = '';
+
     // ── DOM refs ──────────────────────────────────────────────────────────
     const form          = document.getElementById('searchForm');
     const titleInput    = document.getElementById('jobTitle');
@@ -1042,7 +1047,7 @@
       if (criteria) params.set('criteria', criteria);
 
       try {
-        const res  = await fetch(`api/jobs?${params}`);
+        const res  = await fetch(`${API_BASE}api.php?${params}`);
         const data = await res.json();
 
         if (!res.ok) {
