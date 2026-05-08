@@ -895,6 +895,7 @@
     let baseCriteria  = '';           // user's original typed criteria
     let learned = { positive: new Set(), negative: new Set() };
     let savedJobs     = loadSavedJobs();   // persisted to localStorage
+    let noGoodJobs    = loadNoGoodJobs();  // persisted to localStorage
     let savedOpen     = true;
 
     // ── localStorage helpers ──────────────────────────────────────────────
@@ -908,6 +909,16 @@
       catch (_) {}
     }
 
+    function loadNoGoodJobs () {
+      try { return JSON.parse(localStorage.getItem('jobtrack_nogood') || '[]'); }
+      catch (_) { return []; }
+    }
+
+    function persistNoGoodJobs () {
+      try { localStorage.setItem('jobtrack_nogood', JSON.stringify(noGoodJobs)); }
+      catch (_) {}
+    }
+
     function savedJobKey (job) {
       return job.applyLink || `${job.title}__${job.company}`;
     }
@@ -915,6 +926,11 @@
     function isJobSaved (job) {
       const key = savedJobKey(job);
       return savedJobs.some(j => savedJobKey(j) === key);
+    }
+
+    function isJobNoGood (job) {
+      const key = savedJobKey(job);
+      return noGoodJobs.some(j => savedJobKey(j) === key);
     }
 
     // Render saved section on load if there are any
@@ -998,15 +1014,34 @@
       if (feedbackMap[index] === direction) {
         delete feedbackMap[index];
         removeJobKeywords(job);
+        if (direction === 'down') {
+          noGoodJobs = noGoodJobs.filter(j => savedJobKey(j) !== savedJobKey(job));
+          persistNoGoodJobs();
+        }
       } else {
         const prev = feedbackMap[index];
+        // If switching away from dislike, remove from no-good list
+        if (prev === 'down') {
+          noGoodJobs = noGoodJobs.filter(j => savedJobKey(j) !== savedJobKey(job));
+          persistNoGoodJobs();
+        }
         feedbackMap[index] = direction;
         if (prev) removeJobKeywords(job);
         addJobKeywords(job, direction);
+        // Thumbs down → add to persistent no-good list
+        if (direction === 'down' && !isJobNoGood(job)) {
+          noGoodJobs.push(job);
+          persistNoGoodJobs();
+        }
       }
 
       renderLearnedPanel();
       updateFeedbackButtons();
+    };
+
+    window._clearNoGood = function () {
+      noGoodJobs = [];
+      persistNoGoodJobs();
     };
 
     function extractJobKeywords (job) {
@@ -1239,12 +1274,21 @@
           ${(hasCriteria || hasLearned) ? '<span class="sort-badge">Sorted by Match</span>' : ''}
         </div>`;
 
-      // Filter out saved jobs but keep original indices so feedback/save handlers stay in sync
-      const indexedJobs  = jobs.map((job, i) => ({ job, i })).filter(({ job }) => !isJobSaved(job));
-      const hiddenCount  = jobs.length - indexedJobs.length;
-      const hiddenNote   = hiddenCount > 0
+      // Filter out saved and no-good jobs; keep original indices so handlers stay in sync
+      const indexedJobs   = jobs.map((job, i) => ({ job, i }))
+        .filter(({ job }) => !isJobSaved(job) && !isJobNoGood(job));
+      const hiddenSaved   = jobs.filter(j => isJobSaved(j)).length;
+      const hiddenNoGood  = jobs.filter(j => isJobNoGood(j)).length;
+
+      const noteParts = [];
+      if (hiddenSaved  > 0) noteParts.push(`${hiddenSaved} saved`);
+      if (hiddenNoGood > 0) noteParts.push(`${hiddenNoGood} not interested`);
+      const hiddenNote = noteParts.length
         ? `<p style="margin-bottom:12px;font-size:12px;color:var(--text-dim);font-style:italic;">
-            ${hiddenCount} saved job${hiddenCount !== 1 ? 's' : ''} hidden — view them in Saved Jobs above
+            ${noteParts.join(' · ')} hidden
+            ${hiddenNoGood > 0
+              ? `· <button onclick="window._clearNoGood()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:12px;padding:0;font-style:normal;">Clear not-interested list</button>`
+              : ''}
            </p>`
         : '';
 
