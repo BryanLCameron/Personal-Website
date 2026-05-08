@@ -19,7 +19,6 @@ CORS(app)
 
 PORT = int(os.environ.get("PORT", 3000))
 
-# Words too generic to be useful for matching
 _STOP_WORDS = {
     "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
     "of", "with", "by", "from", "is", "are", "was", "were", "be", "been",
@@ -36,22 +35,24 @@ _STOP_WORDS = {
 
 @app.route("/")
 def index():
-    """Serve the frontend."""
     return send_from_directory("public", "index.html")
+
+
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"})
 
 
 @app.route("/api/jobs")
 def get_jobs():
     """
-    Scrape LinkedIn jobs via python-jobspy, optionally scored against
-    user-supplied criteria.
-
     Query params:
-        title    (str)  — job title to search, e.g. "Software Engineer"
-        city     (str)  — city, e.g. "San Jose"
-        state    (str)  — full state name, e.g. "California"
-        criteria (str)  — free-text description of ideal job (optional)
-        results  (int)  — how many results to return (default 20, max 50)
+        title    (str) — job title, e.g. "Software Engineer"
+        city     (str) — city, e.g. "San Jose"
+        state    (str) — state name, e.g. "California"
+        criteria (str) — free-text positive criteria (optional)
+        avoid    (str) — free-text terms to avoid (optional)
+        results  (int) — max results, default 20, max 50
     """
     title    = request.args.get("title",    "").strip()
     city     = request.args.get("city",     "").strip()
@@ -92,12 +93,11 @@ def get_jobs():
         jobs = [_serialize_job(row) for _, row in df.iterrows()]
         jobs = [j for j in jobs if j["title"] and j["applyLink"]]
 
-        # ── Score & sort against criteria + avoid ─────────────────────
         if criteria or avoid:
-            keywords      = _extract_keywords(criteria) if criteria else []
-            avoid_keywords = _extract_keywords(avoid)   if avoid    else []
+            pos_kw  = _extract_keywords(criteria) if criteria else []
+            neg_kw  = _extract_keywords(avoid)    if avoid    else []
             for job in jobs:
-                score, matched = _score_job(job, keywords, avoid_keywords)
+                score, matched       = _score_job(job, pos_kw, neg_kw)
                 job["matchScore"]    = score
                 job["matchKeywords"] = matched
             jobs.sort(key=lambda j: j["matchScore"], reverse=True)
@@ -106,7 +106,7 @@ def get_jobs():
                 job["matchScore"]    = None
                 job["matchKeywords"] = []
 
-        print(f"[JobTrack] Returning {len(jobs)} jobs (criteria={'yes' if criteria else 'no'})")
+        print(f"[JobTrack] Returning {len(jobs)} jobs")
 
         return jsonify({
             "query":    query,
@@ -119,20 +119,19 @@ def get_jobs():
         traceback.print_exc()
         msg = str(exc)
         if "429" in msg or "rate" in msg.lower():
-            msg = "LinkedIn is rate-limiting requests right now. Please wait a few minutes and try again."
+            msg = "LinkedIn is rate-limiting requests. Please wait a few minutes and try again."
         elif "timeout" in msg.lower():
-            msg = "The request timed out. LinkedIn may be slow — please try again shortly."
+            msg = "The request timed out. Please try again shortly."
         elif "blocked" in msg.lower() or "captcha" in msg.lower():
             msg = "LinkedIn has temporarily blocked scraping from this server. Try again in a few minutes."
         return jsonify({"error": msg}), 500
 
 
-# ── Criteria Scoring ───────────────────────────────────────────────────────
+# ── Scoring ────────────────────────────────────────────────────────────────
 
-def _extract_keywords(criteria: str) -> list[str]:
-    text = criteria.lower()
-
-    COMPOUND_TERMS = [
+def _extract_keywords(text):
+    text = text.lower()
+    COMPOUNDS = [
         "machine learning", "deep learning", "natural language processing",
         "computer vision", "data science", "data engineering", "data analysis",
         "software engineering", "product management", "project management",
@@ -142,29 +141,28 @@ def _extract_keywords(criteria: str) -> list[str]:
         "c#", "c++", "objective-c", "ruby on rails",
         "remote work", "work from home", "hybrid",
         "series a", "series b", "series c", "early stage", "startup",
-        "stock options", "equity", "base salary", "sign on",
+        "stock options", "equity", "base salary",
     ]
-    found_compounds = []
-    for term in COMPOUND_TERMS:
+    found = []
+    for term in COMPOUNDS:
         if term in text:
-            found_compounds.append(term.replace(" ", "_"))
+            found.append(term.replace(" ", "_"))
             text = text.replace(term, "")
 
     words = re.findall(r'\b[\w][a-z0-9+#.\-]{1,}\b', text)
     singles = [w for w in words if w not in _STOP_WORDS and len(w) > 1]
 
-    all_keywords = found_compounds + singles
     seen = set()
-    unique = []
-    for k in all_keywords:
+    result = []
+    for k in found + singles:
         if k not in seen:
             seen.add(k)
-            unique.append(k)
-    return unique
+            result.append(k)
+    return result
 
 
-def _score_job(job: dict, keywords: list[str], avoid_keywords: list[str] = None) -> tuple[int, list[str]]:
-    avoid_keywords = avoid_keywords or []
+def _score_job(job, pos_keywords, neg_keywords=None):
+    neg_keywords = neg_keywords or []
 
     title   = (job.get("title")          or "").lower()
     company = (job.get("company")        or "").lower()
@@ -172,40 +170,50 @@ def _score_job(job: dict, keywords: list[str], avoid_keywords: list[str] = None)
     loc     = (job.get("location")       or "").lower()
     emp     = (job.get("employmentType") or "").lower()
 
+    # Positive score
     earned  = 0
     matched = []
-
-    # Positive scoring
-    if keywords:
-        max_points = len(keywords) * 6
-        for kw in keywords:
-            search_kw = kw.replace("_", " ")
+    if pos_keywords:
+        max_pts = len(pos_keywords) * 6
+        for kw in pos_keywords:
+            skw = kw.replace("_", " ")
             hit = False
-            if search_kw in title:   earned += 3; hit = True
-            if search_kw in company: earned += 2; hit = True
-            if search_kw in desc:    earned += 1; hit = True
-            if search_kw in loc or search_kw in emp: earned += 1; hit = True
+            if skw in title:
+                earned += 3
+                hit = True
+            if skw in company:
+                earned += 2
+                hit = True
+            if skw in desc:
+                earned += 1
+                hit = True
+            if skw in loc or skw in emp:
+                earned += 1
+                hit = True
             if hit:
-                matched.append(search_kw)
-        base_score = round((earned / max_points) * 100) if max_points else 50
+                matched.append(skw)
+        base = round((earned / max_pts) * 100) if max_pts else 50
     else:
-        base_score = 50  # neutral if no positive criteria
+        base = 50  # neutral when no positive criteria
 
-    # Negative penalty — each avoid hit subtracts from score
+    # Negative penalty
     penalty = 0
-    for kw in avoid_keywords:
-        search_kw = kw.replace("_", " ")
-        if search_kw in title:   penalty += 25
-        if search_kw in company: penalty += 15
-        if search_kw in desc:    penalty += 10
+    for kw in neg_keywords:
+        skw = kw.replace("_", " ")
+        if skw in title:
+            penalty += 25
+        if skw in company:
+            penalty += 15
+        if skw in desc:
+            penalty += 10
 
-    score = max(0, min(100, base_score - penalty))
+    score = max(0, min(100, base - penalty))
     return score, matched
 
 
 # ── Serializers ────────────────────────────────────────────────────────────
 
-def _serialize_job(row: pd.Series) -> dict:
+def _serialize_job(row):
     return {
         "id":             _safe_str(row.get("id")),
         "title":          _safe_str(row.get("title")),
@@ -222,7 +230,7 @@ def _serialize_job(row: pd.Series) -> dict:
     }
 
 
-def _map_job_type(raw) -> str | None:
+def _map_job_type(raw):
     if raw is None or (isinstance(raw, float) and math.isnan(raw)):
         return None
     label_map = {
@@ -236,7 +244,7 @@ def _map_job_type(raw) -> str | None:
     return label_map.get(raw_str, str(raw).upper())
 
 
-def _format_salary(row: pd.Series) -> str | None:
+def _format_salary(row):
     lo  = row.get("min_amount")
     hi  = row.get("max_amount")
     per = row.get("interval", "") or ""
@@ -250,16 +258,21 @@ def _format_salary(row: pd.Series) -> str | None:
     }.get(str(per).lower(), "")
 
     def fmt(n):
-        try:    return f"${int(n):,}"
-        except: return str(n)
+        try:
+            return f"${int(n):,}"
+        except (ValueError, TypeError):
+            return str(n)
 
-    if not _is_missing(lo) and not _is_missing(hi): return f"{fmt(lo)} – {fmt(hi)}{period}"
-    if not _is_missing(lo):  return f"From {fmt(lo)}{period}"
-    if not _is_missing(hi):  return f"Up to {fmt(hi)}{period}"
+    if not _is_missing(lo) and not _is_missing(hi):
+        return f"{fmt(lo)} – {fmt(hi)}{period}"
+    if not _is_missing(lo):
+        return f"From {fmt(lo)}{period}"
+    if not _is_missing(hi):
+        return f"Up to {fmt(hi)}{period}"
     return None
 
 
-def _format_date(value) -> str | None:
+def _format_date(value):
     if _is_missing(value):
         return None
     if isinstance(value, str):
@@ -273,7 +286,7 @@ def _format_date(value) -> str | None:
         return None
 
 
-def _truncate(text: str, max_chars: int) -> str | None:
+def _truncate(text, max_chars):
     if not text or text == "nan":
         return None
     text = " ".join(text.split())
@@ -282,13 +295,13 @@ def _truncate(text: str, max_chars: int) -> str | None:
     return text[:max_chars].rsplit(" ", 1)[0] + "…"
 
 
-def _safe_str(value) -> str:
+def _safe_str(value):
     if _is_missing(value):
         return ""
     return str(value).strip()
 
 
-def _is_missing(value) -> bool:
+def _is_missing(value):
     if value is None:
         return True
     if isinstance(value, float) and math.isnan(value):

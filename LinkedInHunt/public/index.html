@@ -832,9 +832,7 @@
       }
 
       renderLearnedPanel();
-
-      // Re-search with updated preferences
-      fetchJobs(currentQuery.title, currentQuery.city, currentQuery.state);
+      updateFeedbackButtons();
     };
 
     function extractJobKeywords (job) {
@@ -888,22 +886,43 @@
       learnedPanel.innerHTML = `
         <span class="learned-label">Learned</span>
         <div class="learned-tags">${posTags}${negTags}</div>
-        <button class="retry-btn" style="padding:5px 14px;font-size:12px" onclick="window._clearLearned()">Clear</button>`;
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="retry-btn" style="padding:5px 14px;font-size:12px" onclick="window._clearLearned()">Clear</button>
+          <button class="apply-btn" style="padding:7px 18px;font-size:13px" onclick="window._refineSearch()">
+            🔍 Refine Search
+          </button>
+        </div>`;
     }
 
     window._removeLearned = function (type, keyword) {
       if (type === 'pos') learned.positive.delete(keyword);
       else                learned.negative.delete(keyword);
       renderLearnedPanel();
-      fetchJobs(currentQuery.title, currentQuery.city, currentQuery.state);
     };
 
     window._clearLearned = function () {
       learned = { positive: new Set(), negative: new Set() };
       feedbackMap = {};
       renderLearnedPanel();
+      updateFeedbackButtons();
+    };
+
+    window._refineSearch = function () {
+      if (!currentQuery) return;
       fetchJobs(currentQuery.title, currentQuery.city, currentQuery.state);
     };
+
+    // Re-render just the thumbs button states without re-fetching
+    function updateFeedbackButtons () {
+      document.querySelectorAll('[data-fb-index]').forEach(card => {
+        const index = parseInt(card.dataset.fbIndex);
+        const state = feedbackMap[index];
+        const upBtn   = card.querySelector('.fb-up');
+        const downBtn = card.querySelector('.fb-down');
+        if (upBtn)   upBtn.className   = `feedback-btn fb-up   ${state === 'up'   ? 'liked'    : ''}`;
+        if (downBtn) downBtn.className = `feedback-btn fb-down ${state === 'down' ? 'disliked' : ''}`;
+      });
+    }
 
     // ── Loading state ─────────────────────────────────────────────────────
     function setLoading (on) {
@@ -1022,7 +1041,7 @@
       }
 
       return `
-        <div class="job-card" style="animation-delay:${delay}ms">
+        <div class="job-card" style="animation-delay:${delay}ms" data-fb-index="${index}">
           <div class="job-card-top">
             <div class="job-title-row">
               <p class="job-title">${escHtml(job.title)}</p>
@@ -1037,10 +1056,10 @@
             ${postedHtml}
             <div style="display:flex;align-items:center;gap:10px">
               <div class="feedback-btns">
-                <button class="feedback-btn ${fbState === 'up' ? 'liked' : ''}"
+                <button class="feedback-btn fb-up ${fbState === 'up' ? 'liked' : ''}"
                   onclick="window._jobFeedback(${index},'up')"
                   title="More like this">👍</button>
-                <button class="feedback-btn ${fbState === 'down' ? 'disliked' : ''}"
+                <button class="feedback-btn fb-down ${fbState === 'down' ? 'disliked' : ''}"
                   onclick="window._jobFeedback(${index},'down')"
                   title="Less like this">👎</button>
               </div>
