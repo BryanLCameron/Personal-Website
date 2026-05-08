@@ -979,7 +979,11 @@
       const combinedCriteria = buildCriteria();
       const avoidStr         = [...learned.negative].join(' ');
 
-      const params = new URLSearchParams({ title, city, state });
+      // Request extra results to cover jobs that will be filtered (saved / no-good)
+      const filterBuffer  = savedJobs.length + noGoodJobs.length;
+      const resultsWanted = Math.min(50, 20 + filterBuffer);
+
+      const params = new URLSearchParams({ title, city, state, results: resultsWanted });
       if (combinedCriteria) params.set('criteria', combinedCriteria);
       if (avoidStr)         params.set('avoid', avoidStr);
 
@@ -1275,8 +1279,10 @@
         </div>`;
 
       // Filter out saved and no-good jobs; keep original indices so handlers stay in sync
+      // Slice to 20 so the user always sees a full page of fresh results
       const indexedJobs   = jobs.map((job, i) => ({ job, i }))
-        .filter(({ job }) => !isJobSaved(job) && !isJobNoGood(job));
+        .filter(({ job }) => !isJobSaved(job) && !isJobNoGood(job))
+        .slice(0, 20);
       const hiddenSaved   = jobs.filter(j => isJobSaved(j)).length;
       const hiddenNoGood  = jobs.filter(j => isJobNoGood(j)).length;
 
