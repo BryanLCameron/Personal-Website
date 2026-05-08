@@ -524,6 +524,151 @@
       50%       { opacity: 0.4; transform: scale(0.7); }
     }
 
+    /* ── Save button ────────────────────────────────────────────────────── */
+    .save-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px; height: 34px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .save-btn:hover  { background: rgba(255,255,255,0.1); border-color: var(--border-2); }
+    .save-btn:active { transform: scale(0.92); }
+    .save-btn.saved  {
+      background: rgba(245,158,11,0.12);
+      border-color: rgba(245,158,11,0.4);
+    }
+
+    /* ── Saved section ──────────────────────────────────────────────────── */
+    .saved-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .saved-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .saved-header.open { border-bottom-color: var(--border); }
+
+    .saved-header-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .saved-count-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--yellow-soft);
+      color: var(--yellow);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 100px;
+      padding: 1px 8px;
+    }
+
+    .saved-toggle-icon {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .saved-toggle-icon.open { transform: rotate(180deg); }
+
+    .saved-list {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .saved-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      animation: fadeUp 0.2s ease both;
+    }
+
+    .saved-row-info { flex: 1; min-width: 0; }
+
+    .saved-row-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .saved-row-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .saved-row-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .saved-apply-btn {
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .saved-remove-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 16px;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .saved-remove-btn:hover { color: var(--red); background: var(--red-soft); }
+
+    .saved-hidden-note {
+      font-size: 12px;
+      color: var(--text-dim);
+      padding: 4px 0 0;
+      font-style: italic;
+    }
+
     /* ── Skeleton ───────────────────────────────────────────────────────── */
     .skeleton-card {
       background: var(--surface);
@@ -621,7 +766,7 @@
         </div>
         <span class="logo-text">Job<span>Track</span></span>
       </a>
-      <div class="header-badge">Powered by LinkedIn · Adzuna</div>
+      <div class="header-badge">Powered by LinkedIn</div>
     </div>
   </header>
 
@@ -703,6 +848,9 @@
       </form>
     </div>
 
+    <!-- Saved Jobs Section -->
+    <div id="savedSection" style="display:none"></div>
+
     <!-- Learned Preferences Panel -->
     <div id="learnedPanel" style="display:none"></div>
 
@@ -715,7 +863,7 @@
   <footer>
     <p>
       JobTrack by <a href="https://bryancameron.io" target="_blank">Bryan Cameron</a> ·
-      Job data via <a href="https://developer.adzuna.com" target="_blank">Adzuna Jobs API</a>
+      Job data via <a href="https://www.linkedin.com/jobs" target="_blank">LinkedIn Jobs</a>
     </p>
   </footer>
 
@@ -738,6 +886,7 @@
     const btnText       = document.getElementById('btnText');
     const resultsArea   = document.getElementById('resultsArea');
     const learnedPanel  = document.getElementById('learnedPanel');
+    const savedSection  = document.getElementById('savedSection');
 
     // ── State ─────────────────────────────────────────────────────────────
     let currentQuery  = null;
@@ -745,6 +894,31 @@
     let feedbackMap   = {};           // jobIndex → 'up' | 'down'
     let baseCriteria  = '';           // user's original typed criteria
     let learned = { positive: new Set(), negative: new Set() };
+    let savedJobs     = loadSavedJobs();   // persisted to localStorage
+    let savedOpen     = true;
+
+    // ── localStorage helpers ──────────────────────────────────────────────
+    function loadSavedJobs () {
+      try { return JSON.parse(localStorage.getItem('jobtrack_saved') || '[]'); }
+      catch (_) { return []; }
+    }
+
+    function persistSavedJobs () {
+      try { localStorage.setItem('jobtrack_saved', JSON.stringify(savedJobs)); }
+      catch (_) {}
+    }
+
+    function savedJobKey (job) {
+      return job.applyLink || `${job.title}__${job.company}`;
+    }
+
+    function isJobSaved (job) {
+      const key = savedJobKey(job);
+      return savedJobs.some(j => savedJobKey(j) === key);
+    }
+
+    // Render saved section on load if there are any
+    renderSavedSection();
 
     // ── Form Submit ───────────────────────────────────────────────────────
     form.addEventListener('submit', async (e) => {
@@ -912,6 +1086,93 @@
       fetchJobs(currentQuery.title, currentQuery.city, currentQuery.state);
     };
 
+    // ── Save / Unsave ─────────────────────────────────────────────────────
+    window._toggleSave = function (index) {
+      const job = jobsCache[index];
+      if (!job) return;
+      const key = savedJobKey(job);
+      if (isJobSaved(job)) {
+        savedJobs = savedJobs.filter(j => savedJobKey(j) !== key);
+      } else {
+        savedJobs.push(job);
+      }
+      persistSavedJobs();
+      renderSavedSection();
+      // Update save button on the card without re-fetching
+      const card = document.querySelector(`[data-fb-index="${index}"]`);
+      if (card) {
+        const btn = card.querySelector('.save-btn');
+        if (btn) btn.className = `save-btn${isJobSaved(job) ? ' saved' : ''}`;
+      }
+    };
+
+    window._removeSaved = function (key) {
+      savedJobs = savedJobs.filter(j => savedJobKey(j) !== key);
+      persistSavedJobs();
+      renderSavedSection();
+    };
+
+    window._clearSavedAll = function () {
+      savedJobs = [];
+      persistSavedJobs();
+      renderSavedSection();
+    };
+
+    window._toggleSavedOpen = function () {
+      savedOpen = !savedOpen;
+      const list   = document.getElementById('savedList');
+      const header = document.querySelector('.saved-header');
+      const icon   = document.querySelector('.saved-toggle-icon');
+      if (list)   list.style.display   = savedOpen ? 'flex' : 'none';
+      if (header) header.className     = `saved-header${savedOpen ? ' open' : ''}`;
+      if (icon)   icon.className       = `saved-toggle-icon${savedOpen ? ' open' : ''}`;
+    };
+
+    function renderSavedSection () {
+      if (!savedJobs.length) {
+        savedSection.style.display = 'none';
+        savedSection.innerHTML = '';
+        return;
+      }
+
+      const rows = savedJobs.map(job => {
+        const key  = savedJobKey(job);
+        const sub  = [job.company, job.location].filter(Boolean).join(' · ');
+        return `
+          <div class="saved-row">
+            <div class="saved-row-info">
+              <div class="saved-row-title">${escHtml(job.title)}</div>
+              <div class="saved-row-sub">${escHtml(sub)}</div>
+            </div>
+            <div class="saved-row-actions">
+              <a class="saved-apply-btn" href="${escHtml(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply</a>
+              <button class="saved-remove-btn" onclick="window._removeSaved('${escHtml(key)}')" title="Remove">×</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      savedSection.style.display = 'block';
+      savedSection.innerHTML = `
+        <div class="saved-section">
+          <div class="saved-header${savedOpen ? ' open' : ''}" onclick="window._toggleSavedOpen()">
+            <span class="saved-header-title">
+              ⭐ Saved Jobs
+              <span class="saved-count-badge">${savedJobs.length}</span>
+            </span>
+            <span style="font-size:12px;color:var(--text-dim);margin-left:auto">
+              ${savedJobs.length} saved · hidden from new results
+            </span>
+            <span class="saved-toggle-icon${savedOpen ? ' open' : ''}">▼</span>
+          </div>
+          <div id="savedList" class="saved-list" style="display:${savedOpen ? 'flex' : 'none'}">
+            ${rows}
+            <div style="display:flex;justify-content:flex-end;padding-top:4px">
+              <button class="retry-btn" style="padding:5px 14px;font-size:12px" onclick="window._clearSavedAll()">Clear All Saved</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
     // Re-render just the thumbs button states without re-fetching
     function updateFeedbackButtons () {
       document.querySelectorAll('[data-fb-index]').forEach(card => {
@@ -978,8 +1239,17 @@
           ${(hasCriteria || hasLearned) ? '<span class="sort-badge">Sorted by Match</span>' : ''}
         </div>`;
 
-      const cardsHtml = jobs.map((job, i) => renderCard(job, i, hasCriteria || hasLearned)).join('');
-      resultsArea.innerHTML = headerHtml + '<div class="jobs-list">' + cardsHtml + '</div>';
+      // Filter out saved jobs but keep original indices so feedback/save handlers stay in sync
+      const indexedJobs  = jobs.map((job, i) => ({ job, i })).filter(({ job }) => !isJobSaved(job));
+      const hiddenCount  = jobs.length - indexedJobs.length;
+      const hiddenNote   = hiddenCount > 0
+        ? `<p style="margin-bottom:12px;font-size:12px;color:var(--text-dim);font-style:italic;">
+            ${hiddenCount} saved job${hiddenCount !== 1 ? 's' : ''} hidden — view them in Saved Jobs above
+           </p>`
+        : '';
+
+      const cardsHtml = indexedJobs.map(({ job, i }) => renderCard(job, i, hasCriteria || hasLearned)).join('');
+      resultsArea.innerHTML = headerHtml + hiddenNote + '<div class="jobs-list">' + cardsHtml + '</div>';
     }
 
     function renderCard (job, index, hasCriteria) {
@@ -1062,6 +1332,9 @@
                 <button class="feedback-btn fb-down ${fbState === 'down' ? 'disliked' : ''}"
                   onclick="window._jobFeedback(${index},'down')"
                   title="Less like this">👎</button>
+                <button class="save-btn${isJobSaved(job) ? ' saved' : ''}"
+                  onclick="window._toggleSave(${index})"
+                  title="${isJobSaved(job) ? 'Unsave job' : 'Save job'}">⭐</button>
               </div>
               <a class="apply-btn" href="${escHtml(job.applyLink)}" target="_blank" rel="noopener noreferrer">
                 Apply on LinkedIn
