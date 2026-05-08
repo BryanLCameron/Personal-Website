@@ -8,7 +8,6 @@ import os
 import re
 import math
 import traceback
-from datetime import datetime, timezone
 
 import pandas as pd
 from flask import Flask, jsonify, request, send_from_directory
@@ -49,23 +48,23 @@ def get_jobs():
 
     Query params:
         title    (str)  — job title to search, e.g. "Software Engineer"
-        county   (str)  — county, e.g. "Orange County"
+        city     (str)  — city, e.g. "San Jose"
         state    (str)  — full state name, e.g. "California"
         criteria (str)  — free-text description of ideal job (optional)
         results  (int)  — how many results to return (default 20, max 50)
     """
     title    = request.args.get("title",    "").strip()
-    county   = request.args.get("county",   "").strip()
+    city     = request.args.get("city",     "").strip()
     state    = request.args.get("state",    "").strip()
     criteria = request.args.get("criteria", "").strip()
     results  = min(int(request.args.get("results", 20)), 50)
 
-    if not title or not county or not state:
+    if not title or not city or not state:
         return jsonify({
-            "error": "Missing required parameters: title, county, and state are all required."
+            "error": "Missing required parameters: title, city, and state are all required."
         }), 400
 
-    location = f"{county}, {state}"
+    location = f"{city}, {state}"
     query    = f"{title} in {location}"
 
     try:
@@ -99,7 +98,6 @@ def get_jobs():
                 score, matched = _score_job(job, keywords)
                 job["matchScore"]    = score
                 job["matchKeywords"] = matched
-            # Best matches first
             jobs.sort(key=lambda j: j["matchScore"], reverse=True)
         else:
             for job in jobs:
@@ -130,14 +128,8 @@ def get_jobs():
 # ── Criteria Scoring ───────────────────────────────────────────────────────
 
 def _extract_keywords(criteria: str) -> list[str]:
-    """
-    Pull meaningful tokens out of free-text criteria.
-    Keeps multi-word tech terms (e.g. "machine learning", "react native")
-    as well as individual words.
-    """
     text = criteria.lower()
 
-    # Preserve common compound terms before splitting
     COMPOUND_TERMS = [
         "machine learning", "deep learning", "natural language processing",
         "computer vision", "data science", "data engineering", "data analysis",
@@ -153,15 +145,13 @@ def _extract_keywords(criteria: str) -> list[str]:
     found_compounds = []
     for term in COMPOUND_TERMS:
         if term in text:
-            found_compounds.append(term.replace(" ", "_"))   # tokenize as single unit
+            found_compounds.append(term.replace(" ", "_"))
             text = text.replace(term, "")
 
-    # Extract individual words (allow hyphens, dots, +, # for tech terms)
     words = re.findall(r'\b[\w][a-z0-9+#.\-]{1,}\b', text)
     singles = [w for w in words if w not in _STOP_WORDS and len(w) > 1]
 
     all_keywords = found_compounds + singles
-    # Deduplicate preserving order
     seen = set()
     unique = []
     for k in all_keywords:
@@ -172,50 +162,26 @@ def _extract_keywords(criteria: str) -> list[str]:
 
 
 def _score_job(job: dict, keywords: list[str]) -> tuple[int, list[str]]:
-    """
-    Score a job 0–100 against a keyword list.
-
-    Weighting:
-        Title match       → 3 points per keyword
-        Company match     → 2 points per keyword
-        Description match → 1 point per keyword
-
-    Score is normalised so the maximum possible = 100.
-    """
     if not keywords:
         return 0, []
 
-    title   = (job.get("title")       or "").lower()
-    company = (job.get("company")     or "").lower()
-    desc    = (job.get("description") or "").lower()
-    loc     = (job.get("location")    or "").lower()
+    title   = (job.get("title")          or "").lower()
+    company = (job.get("company")        or "").lower()
+    desc    = (job.get("description")    or "").lower()
+    loc     = (job.get("location")       or "").lower()
     emp     = (job.get("employmentType") or "").lower()
 
-    # Max possible points (all keywords match title + company + desc)
-    max_points = len(keywords) * (3 + 2 + 1)
-
+    max_points = len(keywords) * 6
     earned = 0
     matched = []
 
     for kw in keywords:
-        # Restore compound terms to their spaced form for matching
         search_kw = kw.replace("_", " ")
         hit = False
-
-        if search_kw in title:
-            earned += 3
-            hit = True
-        if search_kw in company:
-            earned += 2
-            hit = True
-        if search_kw in desc:
-            earned += 1
-            hit = True
-        # Bonus: location / employment-type preference
-        if search_kw in loc or search_kw in emp:
-            earned += 1
-            hit = True
-
+        if search_kw in title:   earned += 3; hit = True
+        if search_kw in company: earned += 2; hit = True
+        if search_kw in desc:    earned += 1; hit = True
+        if search_kw in loc or search_kw in emp: earned += 1; hit = True
         if hit:
             matched.append(search_kw)
 
@@ -239,7 +205,6 @@ def _serialize_job(row: pd.Series) -> dict:
         "description":    _truncate(_safe_str(row.get("description")), 300),
         "salary":         _format_salary(row),
         "postedAt":       _format_date(row.get("date_posted")),
-        # matchScore / matchKeywords added after scoring
     }
 
 
@@ -267,21 +232,16 @@ def _format_salary(row: pd.Series) -> str | None:
 
     period = {
         "yearly": "/yr", "monthly": "/mo",
-        "weekly": "/wk", "daily":   "/day", "hourly": "/hr",
+        "weekly": "/wk", "daily": "/day", "hourly": "/hr",
     }.get(str(per).lower(), "")
 
     def fmt(n):
-        try:
-            return f"${int(n):,}"
-        except (ValueError, TypeError):
-            return str(n)
+        try:    return f"${int(n):,}"
+        except: return str(n)
 
-    if not _is_missing(lo) and not _is_missing(hi):
-        return f"{fmt(lo)} – {fmt(hi)}{period}"
-    if not _is_missing(lo):
-        return f"From {fmt(lo)}{period}"
-    if not _is_missing(hi):
-        return f"Up to {fmt(hi)}{period}"
+    if not _is_missing(lo) and not _is_missing(hi): return f"{fmt(lo)} – {fmt(hi)}{period}"
+    if not _is_missing(lo):  return f"From {fmt(lo)}{period}"
+    if not _is_missing(hi):  return f"Up to {fmt(hi)}{period}"
     return None
 
 
