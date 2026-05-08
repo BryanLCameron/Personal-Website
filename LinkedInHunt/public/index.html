@@ -979,9 +979,10 @@
       const combinedCriteria = buildCriteria();
       const avoidStr         = [...learned.negative].join(' ');
 
-      // Request extra results to cover jobs that will be filtered (saved / no-good)
-      const filterBuffer  = savedJobs.length + noGoodJobs.length;
-      const resultsWanted = Math.min(50, 20 + filterBuffer);
+      // Request a small buffer of extra results to replace filtered (saved / no-good) jobs.
+      // Cap the buffer at 10 — asking for too many results causes LinkedIn timeouts.
+      const filterBuffer  = Math.min(savedJobs.length + noGoodJobs.length, 10);
+      const resultsWanted = 20 + filterBuffer; // max 30
 
       const params = new URLSearchParams({ title, city, state, results: resultsWanted });
       if (combinedCriteria) params.set('criteria', combinedCriteria);
