@@ -57,6 +57,7 @@ def get_jobs():
     city     = request.args.get("city",     "").strip()
     state    = request.args.get("state",    "").strip()
     criteria = request.args.get("criteria", "").strip()
+    avoid    = request.args.get("avoid",    "").strip()
     results  = min(int(request.args.get("results", 20)), 50)
 
     if not title or not city or not state:
@@ -91,11 +92,12 @@ def get_jobs():
         jobs = [_serialize_job(row) for _, row in df.iterrows()]
         jobs = [j for j in jobs if j["title"] and j["applyLink"]]
 
-        # ── Score & sort against criteria ──────────────────────────────
-        if criteria:
-            keywords = _extract_keywords(criteria)
+        # ── Score & sort against criteria + avoid ─────────────────────
+        if criteria or avoid:
+            keywords      = _extract_keywords(criteria) if criteria else []
+            avoid_keywords = _extract_keywords(avoid)   if avoid    else []
             for job in jobs:
-                score, matched = _score_job(job, keywords)
+                score, matched = _score_job(job, keywords, avoid_keywords)
                 job["matchScore"]    = score
                 job["matchKeywords"] = matched
             jobs.sort(key=lambda j: j["matchScore"], reverse=True)
@@ -161,9 +163,8 @@ def _extract_keywords(criteria: str) -> list[str]:
     return unique
 
 
-def _score_job(job: dict, keywords: list[str]) -> tuple[int, list[str]]:
-    if not keywords:
-        return 0, []
+def _score_job(job: dict, keywords: list[str], avoid_keywords: list[str] = None) -> tuple[int, list[str]]:
+    avoid_keywords = avoid_keywords or []
 
     title   = (job.get("title")          or "").lower()
     company = (job.get("company")        or "").lower()
@@ -171,22 +172,35 @@ def _score_job(job: dict, keywords: list[str]) -> tuple[int, list[str]]:
     loc     = (job.get("location")       or "").lower()
     emp     = (job.get("employmentType") or "").lower()
 
-    max_points = len(keywords) * 6
-    earned = 0
+    earned  = 0
     matched = []
 
-    for kw in keywords:
-        search_kw = kw.replace("_", " ")
-        hit = False
-        if search_kw in title:   earned += 3; hit = True
-        if search_kw in company: earned += 2; hit = True
-        if search_kw in desc:    earned += 1; hit = True
-        if search_kw in loc or search_kw in emp: earned += 1; hit = True
-        if hit:
-            matched.append(search_kw)
+    # Positive scoring
+    if keywords:
+        max_points = len(keywords) * 6
+        for kw in keywords:
+            search_kw = kw.replace("_", " ")
+            hit = False
+            if search_kw in title:   earned += 3; hit = True
+            if search_kw in company: earned += 2; hit = True
+            if search_kw in desc:    earned += 1; hit = True
+            if search_kw in loc or search_kw in emp: earned += 1; hit = True
+            if hit:
+                matched.append(search_kw)
+        base_score = round((earned / max_points) * 100) if max_points else 50
+    else:
+        base_score = 50  # neutral if no positive criteria
 
-    score = round((earned / max_points) * 100) if max_points else 0
-    return min(score, 100), matched
+    # Negative penalty — each avoid hit subtracts from score
+    penalty = 0
+    for kw in avoid_keywords:
+        search_kw = kw.replace("_", " ")
+        if search_kw in title:   penalty += 25
+        if search_kw in company: penalty += 15
+        if search_kw in desc:    penalty += 10
+
+    score = max(0, min(100, base_score - penalty))
+    return score, matched
 
 
 # ── Serializers ────────────────────────────────────────────────────────────

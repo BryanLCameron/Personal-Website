@@ -419,6 +419,111 @@
 
     .apply-btn:hover { background: #3056d3; }
 
+    /* ── Feedback buttons ───────────────────────────────────────────────── */
+    .feedback-btns {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feedback-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px; height: 34px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .feedback-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--border-2); }
+    .feedback-btn:active { transform: scale(0.92); }
+
+    .feedback-btn.liked {
+      background: var(--green-soft);
+      border-color: rgba(34,197,94,0.4);
+    }
+
+    .feedback-btn.disliked {
+      background: var(--red-soft);
+      border-color: rgba(239,68,68,0.4);
+    }
+
+    /* ── Learned panel ──────────────────────────────────────────────────── */
+    .learned-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .learned-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+      padding-top: 3px;
+    }
+
+    .learned-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .learned-tag {
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 100px;
+      padding: 3px 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .learned-tag.pos { background: var(--green-soft);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3); }
+    .learned-tag.neg { background: var(--red-soft);    color: var(--red);    border: 1px solid rgba(239,68,68,0.3); }
+
+    .learned-tag button {
+      background: none; border: none; cursor: pointer;
+      color: inherit; opacity: 0.6; font-size: 13px; padding: 0; line-height: 1;
+    }
+    .learned-tag button:hover { opacity: 1; }
+
+    .learned-refining {
+      font-size: 12px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .pulse-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
     /* ── Skeleton ───────────────────────────────────────────────────────── */
     .skeleton-card {
       background: var(--surface);
@@ -598,6 +703,9 @@
       </form>
     </div>
 
+    <!-- Learned Preferences Panel -->
+    <div id="learnedPanel" style="display:none"></div>
+
     <!-- Results Area -->
     <div id="resultsArea"></div>
 
@@ -617,8 +725,6 @@
     'use strict';
 
     // ── Config ────────────────────────────────────────────────────────────
-    // Set this to your Render URL after deploying, e.g.:
-    // const API_BASE = 'https://jobtrack.onrender.com';
     const API_BASE = 'https://personal-website-h6u2.onrender.com';
 
     // ── DOM refs ──────────────────────────────────────────────────────────
@@ -631,29 +737,38 @@
     const spinner       = document.getElementById('spinner');
     const btnText       = document.getElementById('btnText');
     const resultsArea   = document.getElementById('resultsArea');
+    const learnedPanel  = document.getElementById('learnedPanel');
 
     // ── State ─────────────────────────────────────────────────────────────
-    let currentQuery = null;
+    let currentQuery  = null;
+    let jobsCache     = [];           // last batch of jobs from API
+    let feedbackMap   = {};           // jobIndex → 'up' | 'down'
+    let baseCriteria  = '';           // user's original typed criteria
+    let learned = { positive: new Set(), negative: new Set() };
 
     // ── Form Submit ───────────────────────────────────────────────────────
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!validate()) return;
 
-      const title    = titleInput.value.trim();
-      const city     = cityInput.value.trim();
-      const state    = stateInput.value;
-      const criteria = criteriaInput.value.trim();
+      // Reset learned state on a fresh manual search
+      learned = { positive: new Set(), negative: new Set() };
+      feedbackMap = {};
+      baseCriteria = criteriaInput.value.trim();
+      renderLearnedPanel();
 
-      currentQuery = { title, city, state, criteria };
-      await fetchJobs(title, city, state, criteria);
+      const title = titleInput.value.trim();
+      const city  = cityInput.value.trim();
+      const state = stateInput.value;
+
+      currentQuery = { title, city, state };
+      await fetchJobs(title, city, state);
     });
 
     // ── Validation ────────────────────────────────────────────────────────
     function validate () {
       let ok = true;
       [titleInput, cityInput, stateInput].forEach(el => el.classList.remove('error'));
-
       if (!titleInput.value.trim()) { titleInput.classList.add('error'); ok = false; }
       if (!cityInput.value.trim())  { cityInput.classList.add('error');  ok = false; }
       if (!stateInput.value)        { stateInput.classList.add('error'); ok = false; }
@@ -666,21 +781,25 @@
     });
 
     // ── Fetch Jobs ────────────────────────────────────────────────────────
-    async function fetchJobs (title, city, state, criteria = '') {
+    async function fetchJobs (title, city, state) {
       setLoading(true);
       showSkeletons();
 
+      // Combine user criteria with learned positive keywords
+      const combinedCriteria = buildCriteria();
+      const avoidStr         = [...learned.negative].join(' ');
+
       const params = new URLSearchParams({ title, city, state });
-      if (criteria) params.set('criteria', criteria);
+      if (combinedCriteria) params.set('criteria', combinedCriteria);
+      if (avoidStr)         params.set('avoid', avoidStr);
 
       try {
         const res  = await fetch(`${API_BASE}/api/jobs?${params}`);
         const data = await res.json();
 
-        if (!res.ok) {
-          throw new Error(data.error || 'Something went wrong. Please try again.');
-        }
+        if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
 
+        jobsCache = data.jobs || [];
         renderResults(data);
       } catch (err) {
         renderError(err.message);
@@ -689,9 +808,106 @@
       }
     }
 
+    function buildCriteria () {
+      const parts = [];
+      if (baseCriteria) parts.push(baseCriteria);
+      if (learned.positive.size) parts.push([...learned.positive].join(' '));
+      return parts.join(' ').trim();
+    }
+
+    // ── Feedback ──────────────────────────────────────────────────────────
+    window._jobFeedback = function (index, direction) {
+      const job = jobsCache[index];
+      if (!job) return;
+
+      // Toggle: clicking same button again removes it
+      if (feedbackMap[index] === direction) {
+        delete feedbackMap[index];
+        removeJobKeywords(job);
+      } else {
+        const prev = feedbackMap[index];
+        feedbackMap[index] = direction;
+        if (prev) removeJobKeywords(job);
+        addJobKeywords(job, direction);
+      }
+
+      renderLearnedPanel();
+
+      // Re-search with updated preferences
+      fetchJobs(currentQuery.title, currentQuery.city, currentQuery.state);
+    };
+
+    function extractJobKeywords (job) {
+      const stopWords = new Set([
+        'a','an','the','and','or','but','in','on','at','to','for','of','with',
+        'is','are','was','we','our','you','your','it','its','this','that',
+        'be','been','have','has','will','would','could','should','may','might',
+      ]);
+      const raw = `${job.title || ''} ${job.company || ''}`.toLowerCase();
+      const words = (raw.match(/\b[a-z][a-z0-9+#.\-]{1,}\b/g) || []);
+      return [...new Set(words.filter(w => !stopWords.has(w) && w.length > 2))].slice(0, 5);
+    }
+
+    function addJobKeywords (job, direction) {
+      const keywords = extractJobKeywords(job);
+      const target   = direction === 'up' ? learned.positive : learned.negative;
+      const opposite = direction === 'up' ? learned.negative : learned.positive;
+      keywords.forEach(k => { target.add(k); opposite.delete(k); });
+    }
+
+    function removeJobKeywords (job) {
+      const keywords = extractJobKeywords(job);
+      keywords.forEach(k => { learned.positive.delete(k); learned.negative.delete(k); });
+    }
+
+    // ── Learned Panel ─────────────────────────────────────────────────────
+    function renderLearnedPanel () {
+      const hasPos = learned.positive.size > 0;
+      const hasNeg = learned.negative.size > 0;
+
+      if (!hasPos && !hasNeg) {
+        learnedPanel.style.display = 'none';
+        learnedPanel.innerHTML = '';
+        return;
+      }
+
+      const posTags = [...learned.positive].map(k => `
+        <span class="learned-tag pos">
+          👍 ${escHtml(k)}
+          <button onclick="window._removeLearned('pos','${escHtml(k)}')" title="Remove">×</button>
+        </span>`).join('');
+
+      const negTags = [...learned.negative].map(k => `
+        <span class="learned-tag neg">
+          👎 ${escHtml(k)}
+          <button onclick="window._removeLearned('neg','${escHtml(k)}')" title="Remove">×</button>
+        </span>`).join('');
+
+      learnedPanel.style.display = 'flex';
+      learnedPanel.className = 'learned-panel';
+      learnedPanel.innerHTML = `
+        <span class="learned-label">Learned</span>
+        <div class="learned-tags">${posTags}${negTags}</div>
+        <button class="retry-btn" style="padding:5px 14px;font-size:12px" onclick="window._clearLearned()">Clear</button>`;
+    }
+
+    window._removeLearned = function (type, keyword) {
+      if (type === 'pos') learned.positive.delete(keyword);
+      else                learned.negative.delete(keyword);
+      renderLearnedPanel();
+      fetchJobs(currentQuery.title, currentQuery.city, currentQuery.state);
+    };
+
+    window._clearLearned = function () {
+      learned = { positive: new Set(), negative: new Set() };
+      feedbackMap = {};
+      renderLearnedPanel();
+      fetchJobs(currentQuery.title, currentQuery.city, currentQuery.state);
+    };
+
     // ── Loading state ─────────────────────────────────────────────────────
     function setLoading (on) {
-      searchBtn.disabled   = on;
+      searchBtn.disabled    = on;
       spinner.style.display = on ? 'block' : 'none';
       btnText.textContent   = on ? 'Searching…' : 'Search Jobs';
     }
@@ -709,7 +925,7 @@
 
     // ── Render Results ────────────────────────────────────────────────────
     function renderResults (data) {
-      const { jobs = [], total, query, criteria } = data;
+      const { jobs = [], total, criteria } = data;
 
       if (!jobs.length) {
         resultsArea.innerHTML = `
@@ -732,6 +948,7 @@
       }
 
       const hasCriteria = criteria && criteria.trim().length > 0;
+      const hasLearned  = learned.positive.size > 0 || learned.negative.size > 0;
       const headerHtml = `
         <div class="results-header">
           <p class="results-meta">
@@ -739,15 +956,16 @@
             <strong>${escHtml(currentQuery.title)}</strong> in
             <strong>${escHtml(currentQuery.city)}, ${escHtml(currentQuery.state)}</strong>
           </p>
-          ${hasCriteria ? '<span class="sort-badge">Sorted by Match</span>' : ''}
+          ${(hasCriteria || hasLearned) ? '<span class="sort-badge">Sorted by Match</span>' : ''}
         </div>`;
 
-      const cardsHtml = jobs.map((job, i) => renderCard(job, i, hasCriteria)).join('');
+      const cardsHtml = jobs.map((job, i) => renderCard(job, i, hasCriteria || hasLearned)).join('');
       resultsArea.innerHTML = headerHtml + '<div class="jobs-list">' + cardsHtml + '</div>';
     }
 
     function renderCard (job, index, hasCriteria) {
-      const delay = Math.min(index * 50, 300);
+      const delay     = Math.min(index * 50, 300);
+      const fbState   = feedbackMap[index];
 
       // Match badge
       let badgeHtml = '';
@@ -766,9 +984,7 @@
             ${escHtml(job.location)}
           </span>`);
       }
-      if (job.isRemote) {
-        metaPills.push(`<span class="meta-pill remote-pill">Remote</span>`);
-      }
+      if (job.isRemote) metaPills.push(`<span class="meta-pill remote-pill">Remote</span>`);
       if (job.employmentType) {
         const labels = { FULLTIME:'Full-time', PARTTIME:'Part-time', CONTRACTOR:'Contract', INTERN:'Internship', TEMPORARY:'Temporary' };
         metaPills.push(`<span class="meta-pill">${labels[job.employmentType] || job.employmentType}</span>`);
@@ -819,10 +1035,20 @@
           ${kwHtml}
           <div class="job-card-bottom">
             ${postedHtml}
-            <a class="apply-btn" href="${escHtml(job.applyLink)}" target="_blank" rel="noopener noreferrer">
-              Apply on LinkedIn
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="feedback-btns">
+                <button class="feedback-btn ${fbState === 'up' ? 'liked' : ''}"
+                  onclick="window._jobFeedback(${index},'up')"
+                  title="More like this">👍</button>
+                <button class="feedback-btn ${fbState === 'down' ? 'disliked' : ''}"
+                  onclick="window._jobFeedback(${index},'down')"
+                  title="Less like this">👎</button>
+              </div>
+              <a class="apply-btn" href="${escHtml(job.applyLink)}" target="_blank" rel="noopener noreferrer">
+                Apply on LinkedIn
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
           </div>
         </div>`;
     }
